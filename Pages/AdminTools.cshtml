@@ -1,0 +1,18 @@
+@page
+@model GtopPdqNet.Pages.AdminToolsModel
+@{ 
+    ViewData["Title"] = "Ferramentas Administrativas";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-info" role="alert">
+        @Model.StatusMessage
+    </div>
+}
+
+<form method="post">
+    <button type="submit" asp-page-handler="RefreshPackages" class="btn btn-primary">Atualizar Cache de Pacotes PDQ</button>
+</form>

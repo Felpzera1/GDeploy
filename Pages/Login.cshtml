@@ -1,0 +1,53 @@
+@page
+@model GtopPdqNet.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login"; // Título para o layout condicional funcionar
+}
+
+@* Container principal para layout de login (tela cheia, duas colunas) *@
+<div class="login-page-container">
+
+    @* Coluna Esquerda: Sidebar de Login *@
+    <div class="login-sidebar">
+        <div class="login-form-box">
+
+            <h3 class="text-center mb-4"></h3>
+            @* Area de Erros *@
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @Model.ErrorMessage
+                </div>
+            }
+
+            @* Formulário de Login *@
+            <form id="account" method="post">
+                <div class="mb-3">
+                    <label asp-for="Input.Username" class="form-label"></label>
+                    <input asp-for="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="Digite o seu usuário..." />
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label"></label>
+                    <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Digite sua senha..." />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="d-grid gap-2 mb-3">
+                    <button id="login-submit" type="submit" class="btn btn-primary btn-lg">Entrar</button> @* Botão maior *@
+                </div>
+            </form>
+        </div> @* Fim .login-form-box *@
+    </div> @* Fim .login-sidebar *@
+
+    @* Coluna Direita: Background Visual *@
+    <div class="login-main-background">
+        @* <h1 class="text-white">GtopPdqNet</h1> *@
+        @* <img src="/images/algum-logo-grande.png" alt="Background Visual" /> *@
+    </div> @* Fim .login-main-background *@
+
+</div> @* Fim .login-page-container *@
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

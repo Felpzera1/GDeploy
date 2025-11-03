@@ -1,0 +1,12 @@
+@page
+@model GtopPdqNet.Pages.LogoutModel
+@{
+    ViewData["Title"] = "Logout"; // Título da página de logout
+    // Esta página é exibida rapidamente após o logout,
+    // geralmente antes do redirecionamento acontecer.
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Você foi desconectado com sucesso.</p>
+@* Opcional: Link para login se o redirecionamento padrão não for para lá *@
+@* <p><a asp-page="/Login">Fazer login novamente</a></p> *@

@@ -1,0 +1,30 @@
+@page
+@model ResultadoModel
+@{
+    ViewData["Title"] = "Resultado do Deploy";
+}
+@attribute [Authorize] // Requer login
+
+<div class="box">
+    <div class="box-header">
+        <h1>@ViewData["Title"]</h1>
+    </div>
+    <div class="box-body">
+        @* Caixa de Status Flash baseada nos dados do TempData *@
+        <div class="flash @(Model.DeploySuccess ? "flash-success" : "flash-danger")">
+            <h2>@Model.StatusTitulo</h2>
+            <p>@Model.MensagemResumo</p>
+        </div>
+
+        @* Caixa de Logs Detalhados *@
+        @if (!string.IsNullOrEmpty(Model.LogCompleto))
+        {
+            <div class="log-box">
+                <h3>Log Completo da Execucao:</h3>
+                <pre>@Model.LogCompleto</pre>
+            </div>
+        }
+
+        <a asp-page="/Index" class="btn-link">Voltar para Novo Deploy</a>
+    </div>
+</div>

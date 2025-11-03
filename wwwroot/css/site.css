@@ -1,0 +1,253 @@
+/* site.css - Estilos Personalizados v3 */
+
+/* Layout base para o body */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Estilo para o main content */
+main {
+  flex-grow: 1;
+}
+
+
+/* --- Layout Específico para a Página de Login --- */
+.login-page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.login-sidebar {
+  flex: 0 0 350px;
+  min-width: 300px;
+  background-color: #212529;
+  color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 30px;
+}
+
+/* --- CORREÇÃO AQUI: Regra Principal para o Background da Direita --- */
+.login-main-background {
+  flex-grow: 1; /* Ocupa o espaço restante */
+
+  /* Define a IMAGEM como fundo padrão */
+  background-image: url('../images/background_gtop.JPG'); /* <= Use caminho absoluto e verifique nome */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  /* Estilos adicionais (se precisar de conteúdo sobre a imagem) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white; /* Para texto sobreposto, se houver */
+}
+
+
+/* Para telas menores, ajusta a sidebar e esconde o fundo da imagem */
+@media (max-width: 767.98px) {
+  .login-sidebar {
+      flex: 0 0 100%;
+      min-width: auto;
+      height: auto;
+      justify-content: flex-start;
+  }
+  .login-main-background {
+      display: none; /* Esconde a div inteira com a imagem em telas pequenas */
+  }
+}
+/* --- FIM DA CORREÇÃO DO BACKGROUND --- */
+
+
+.login-form-box {
+   width: 100%;
+   max-width: 300px;
+   margin: auto;
+}
+
+/* Estilos dos inputs e botões do login (sem alterações) */
+.login-form-box .form-control {
+  background-color: #343a40;
+  color: #f8f9fa;
+  border-color: #495057;
+}
+.login-form-box .form-control::placeholder {
+  color: #ced4da;
+  opacity: 1;
+}
+.login-form-box .form-control:focus {
+  background-color: #343a40;
+  color: #f8f9fa;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+.login-form-box .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.login-form-box .btn-primary:hover {
+   background-color: #0056b3;
+   border-color: #004085;
+}
+.login-form-box a {
+  color: #ced4da;
+  text-decoration: none;
+}
+.login-form-box a:hover {
+   color: #f8f9fa;
+   text-decoration: underline;
+}
+
+
+/* --- Estilo Reutilizável para Caixas de Conteúdo Escuras (sem alterações) --- */
+.dark-content-box {
+  background-color: #212529;
+  color: #f8f9fa;
+  padding: 30px;
+  border-radius: 8px;
+}
+.dark-content-box .form-control,
+.dark-content-box .form-select {
+   background-color: #343a40;
+   color: #f8f9fa;
+   border-color: #495057;
+}
+.dark-content-box .form-control::placeholder {
+   color: #ced4da;
+   opacity: 1;
+}
+.dark-content-box .form-control:focus,
+.dark-content-box .form-select:focus {
+   background-color: #343a40;
+   color: #f8f9fa;
+   border-color: #007bff;
+   box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+.dark-content-box hr {
+  border-top-color: #495057;
+}
+
+/* --- Estilos para o Footer (sem alterações) --- */
+.footer {
+  width: 100%;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: auto;
+  background-color: #f8f9fa;
+  color: #212529;
+  flex-shrink: 0;
+}
+
+/* NOVOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO */
+
+/* === ESTILOS PARA ÁREA AUTENTICADA (PÁGINA INDEX PÓS-LOGIN) === */
+
+/* 
+  Para aplicar um fundo escuro geral à página Index e outras páginas autenticadas,
+  você precisará modificar o _Layout.cshtml que essas páginas usam.
+  Encontre o _Layout.cshtml para usuários logados (geralmente em Pages/Shared/_Layout.cshtml,
+  mas pode ser outro se você tiver múltiplos layouts) e adicione uma classe ao <body>,
+  por exemplo: <body class="authenticated-area">
+*/
+body.authenticated-area {
+  background-color: #1c1c1e; /* Um cinza bem escuro, quase preto. Pode ser #212529 para combinar com .dark-content-box */
+  color: #f8f9fa;           /* Cor de texto padrão clara para bom contraste */
+}
+
+/* 
+  Estilizando o cabeçalho/navbar para o tema escuro.
+  Se seu cabeçalho no _Layout.cshtml for uma navbar do Bootstrap, como por exemplo:
+  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+  Você pode mudar para:
+  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+  Isso já aplicará muitos estilos escuros do Bootstrap.
+
+  Se precisar de mais personalização ou se não for Bootstrap, use uma classe como abaixo
+  e adicione essa classe à tag <nav> no seu _Layout.cshtml: <nav class="authenticated-header ...">
+*/
+.authenticated-header .navbar-brand,
+.authenticated-header .nav-link {
+  color: #f8f9fa !important; /* Garante que os links do cabeçalho fiquem claros */
+}
+
+.authenticated-header .nav-link:hover {
+  color: #007bff !important; /* Um azul para o hover, como na sua tela de login */
+}
+
+/* 
+  A classe .dark-content-box que você já usa está boa.
+  Apenas para garantir que todo o texto dentro dela seja claro:
+*/
+.dark-content-box h1,
+.dark-content-box h2,
+.dark-content-box h3,
+.dark-content-box h4,
+.dark-content-box h5,
+.dark-content-box h6,
+.dark-content-box p,
+.dark-content-box label {
+  color: #f8f9fa; /* Garante que o texto seja claro */
+}
+
+/* 
+  Estilizando os botões "Atualizar Lista de Pacotes" e "Sair" para melhor visibilidade.
+  Você usou btn-outline-secondary e btn-outline-danger.
+  Para um tema escuro, btn-outline-light pode ser uma boa alternativa, ou um azul.
+*/
+
+/* Exemplo para o botão de Atualizar Pacotes, se quiser um azul similar ao do login */
+.btn-update-packages {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+.btn-update-packages:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+  color: white;
+}
+
+/* Se quiser que o botão Sair (outline-danger) tenha texto mais claro no hover */
+.btn-outline-danger:hover {
+    color: white; /* Texto branco no hover para botões outline em fundo escuro */
+}
+
+
+/* 
+  Estilizando o rodapé para o tema escuro.
+  Seu rodapé atual no site.css tem fundo claro.
+  Adicione uma classe ao seu footer no _Layout.cshtml, por exemplo: <footer class="footer authenticated-footer ...">
+*/
+.footer.authenticated-footer {
+  background-color: #212529; /* Fundo escuro para o rodapé */
+  color: #adb5bd;           /* Cor de texto suave para o rodapé */
+  border-top: 1px solid #343a40; /* Uma borda sutil no topo */
+}
+
+.footer.authenticated-footer a {
+  color: #007bff; /* Links em azul no rodapé */
+}
+
+.footer.authenticated-footer a:hover {
+  color: #0056b3;
+}
+
+/* Ajuste para a cor do texto do nome do usuário logado, se necessário */
+/* No Index.cshtml, você tem: <span class="text-muted">Usuário: @User.Identity.Name</span> */
+/* A classe text-muted do Bootstrap pode ficar um pouco escura demais em um fundo muito escuro. */
+/* Você pode remover text-muted ou criar uma classe específica: */
+.user-identity-text {
+    color: #adb5bd; /* Ou #f8f9fa para mais destaque */
+}
+

@@ -1,0 +1,69 @@
+﻿@* _Layout.cshtml - Modificado para Tema Escuro na Área Autenticada v4 *@
+<!DOCTYPE html>
+<html lang="pt-br">
+   <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>@ViewData["Title"] - Gtop PDQ</title>
+      <link rel="icon" href="~/gtop-icon.ico" type="image/x-icon" />
+      <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+   </head>
+   @if (ViewData["Title"]?.ToString() != "Login")
+   {
+   @* Layout para área autenticada (tema escuro) *@
+   <body class="d-flex flex-column min-vh-100 authenticated-area">
+      @* <<< CLASSE PARA FUNDO ESCURO ADICIONADA AQUI *@
+      <header>
+         @* Navbar escura para área autenticada *@
+         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+            @* <<< CLASSES DA NAVBAR ALTERADAS PARA TEMA ESCURO *@
+            <div class="container">
+               <a class="navbar-brand" asp-area="" asp-page="/Index">
+               <img src="~/images/Logotipo_Gtop_Azul.png" alt="Logo da Empresa" style="height: 30px; margin-right: 5px;"> @* Ajuste height e o nome do arquivo *@
+               </a>
+               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                  aria-expanded="false" aria-label="Toggle navigation">
+               <span class="navbar-toggler-icon"></span> @* O ícone do toggler pode precisar de ajuste de cor via CSS se ficar invisível *@
+               </button>
+               <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                  <ul class="navbar-nav flex-grow-1">
+                     <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-page="/Index">Deploy</a> @* Removido text-dark, pois navbar-dark cuida disso *@
+                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-page="/AuditLogs">Auditoria</a>
+                     </li>
+                     @* Outros links *@
+                  </ul>
+                  @* _LoginPartial já deve ter texto claro devido ao navbar-dark, mas pode precisar de ajustes se você personalizou muito *@
+                  <partial name="_LoginPartial" />
+               </div>
+            </div>
+         </nav>
+      </header>
+      <main role="main" class="container pb-3 flex-shrink-0">
+         @RenderBody()
+      </main>
+      @* Footer escuro para área autenticada *@
+      <footer class="border-top footer authenticated-footer mt-auto">
+         @* <<< CLASSE PARA FOOTER ESCURO ADICIONADA AQUI *@
+         @*<div class="container">
+            &copy; @DateTime.Now.Year - GtopPdqNet - <a asp-area="" asp-page="/Privacy">Privacy</a>
+         </div> *@
+      </footer>
+   </body>
+   }
+   else
+   {
+   @* Layout para a página de Login (sem alterações aqui, pois ela tem seu próprio estilo) *@
+   <body class="d-flex flex-column min-vh-100">
+      @RenderBody()
+   </body>
+   }
+   <script src="~/lib/jquery/dist/jquery.min.js"></script>
+   <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="~/js/site.js" asp-append-version="true"></script>
+   @await RenderSectionAsync("Scripts", required: false)
+</html>

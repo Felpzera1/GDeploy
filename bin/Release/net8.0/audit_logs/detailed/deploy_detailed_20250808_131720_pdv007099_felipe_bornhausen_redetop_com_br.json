@@ -1,0 +1,11 @@
+{
+  "Timestamp": "2025-08-08 13:17:20",
+  "Username": "felipe.bornhausen@redetop.com.br",
+  "Hostname": "pdv007099",
+  "PackageName": "Loja 009 - Atribuicao de grupo",
+  "Success": false,
+  "Output": "-> Verificando conectividade com 'pdv007099'...\r\nFALHA CONEXÃO: Host 'pdv007099' não resolvido (erro DNS).\r\n",
+  "DetailedOutput": "-> Verificando conectividade com 'pdv007099'...\r\nFALHA CONEXÃO: Host 'pdv007099' não resolvido (erro DNS).\r\n",
+  "LogFile": "deploy_detailed_20250808_131720_pdv007099_felipe_bornhausen_redetop_com_br.json",
+  "CreatedAt": "2025-08-08 13:17:20"
+}
