@@ -252,8 +252,8 @@ namespace GtopPdqNet.Pages
                 logBuilder.AppendLine("Monitorando execução...");
 
                 var fullLog = logBuilder.ToString();
-                // Aqui você pode salvar o log de auditoria se desejar
-                // await _auditService.LogDeployAsync(username, hostname, templateName, true, fullLog);
+                // Salvar log de auditoria do AWX
+                await _auditService.LogAWXDeployAsync(username, hostname, templateName, true, fullLog);
 
                 return new JsonResult(new { success = true, log = fullLog, jobId = jobId });
             }
@@ -263,6 +263,9 @@ namespace GtopPdqNet.Pages
                 logBuilder.AppendLine($"\nERRO: {ex.Message}");
 
                 var fullLog = logBuilder.ToString();
+                // Salvar log de auditoria mesmo em caso de erro
+                await _auditService.LogAWXDeployAsync(username, hostname, templateName, false, fullLog);
+                
                 return new JsonResult(new { success = false, log = fullLog, jobId = (int?)null });
             }
         }
