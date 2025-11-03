@@ -251,6 +251,16 @@ public class Program
             .SetApplicationName("PdqWebApp");
 
         builder.Services.AddMemoryCache();
+        
+        // Adicionar serviço de Session
+        builder.Services.AddDistributedMemoryCache(); // Usar cache em memória para Session
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30); // Session expira após 30 minutos de inatividade
+            options.Cookie.HttpOnly = true; // Proteger contra XSS
+            options.Cookie.IsEssential = true; // Essencial para o funcionamento da aplicação
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Apenas HTTPS
+        });
 
         var app = builder.Build();
         var logService = app.Services.GetRequiredService<LiveLogService>();
@@ -268,6 +278,9 @@ public class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
+        
+        // Adicionar middleware de Session ANTES de UseAuthentication
+        app.UseSession();
         
         app.UseAuthentication(); 
         app.UseAuthorization();  

@@ -1,0 +1,12 @@
+{
+  "Timestamp": "2025-11-03 16:51:15",
+  "Username": "felipe.bornhausen@redetop.com.br",
+  "Hostname": "192.168.1.94",
+  "TemplateName": "Pingar Host",
+  "DeployType": "AWX",
+  "Success": true,
+  "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\nSUCESSO: Job Template disparado com sucesso!\r\nJob ID: 89\r\nMonitorando execução...\r\n",
+  "DetailedOutput": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\nSUCESSO: Job Template disparado com sucesso!\r\nJob ID: 89\r\nMonitorando execução...\r\n",
+  "LogFile": "awx_detailed_20251103_165115_192.168.1.94_Pingar_Host_felipe_bornhausen_redetop_com_br.json",
+  "CreatedAt": "2025-11-03 16:51:15"
+}

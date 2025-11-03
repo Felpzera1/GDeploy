@@ -12,7 +12,9 @@ using System;
 using GtopPdqNet.Interfaces; 
 using GtopPdqNet.Services; // Para AuditService
 using System.Net.NetworkInformation; 
-using System.Text;                   
+using System.Text;
+using Microsoft.AspNetCore.Http;
+
 
 namespace GtopPdqNet.Pages 
 {
@@ -252,8 +254,8 @@ namespace GtopPdqNet.Pages
                 logBuilder.AppendLine("Monitorando execução...");
 
                 var fullLog = logBuilder.ToString();
-                // Salvar log de auditoria do AWX
-                await _auditService.LogAWXDeployAsync(username, hostname, templateName, true, fullLog);
+                // NÃO salvar log de auditoria aqui - será salvo quando o Job terminar
+                // await _auditService.LogAWXDeployAsync(username, hostname, templateName, true, fullLog);
 
                 // Persistir o Job ID em Session para recuperação após navegação
                 HttpContext.Session.SetInt32("CurrentAWXJobId", jobId);
@@ -301,6 +303,35 @@ namespace GtopPdqNet.Pages
             {
                 _logger.LogError(ex, "IndexModel.OnGetGetAWXJobStatusAsync: Erro ao obter status do Job {JobId}.", jobId);
                 return new JsonResult(new { status = "error", output = $"ERRO: {ex.Message}" });
+            }
+        }
+
+        public async Task<JsonResult> OnGetFinalizeAWXJobAsync(int jobId, string finalStatus, string output)
+        {
+            _logger.LogInformation("IndexModel.OnGetFinalizeAWXJobAsync: Finalizando Job ID: {JobId}, Status: {Status}", jobId, finalStatus);
+
+            try
+            {
+                var username = User?.Identity?.Name ?? "Usuario Desconhecido";
+                var hostname = HttpContext.Session.GetString("CurrentAWXHostname") ?? "Desconhecido";
+                var templateName = HttpContext.Session.GetString("CurrentAWXTemplateName") ?? "Desconhecido";
+
+                bool success = finalStatus == "successful";
+
+                await _auditService.LogAWXDeployAsync(username, hostname, templateName, success, output);
+                _logger.LogInformation("IndexModel.OnGetFinalizeAWXJobAsync: Log de auditoria salvo para Job {JobId} com sucesso: {Success}", jobId, success);
+
+                HttpContext.Session.Remove("CurrentAWXJobId");
+                HttpContext.Session.Remove("CurrentAWXHostname");
+                HttpContext.Session.Remove("CurrentAWXTemplateName");
+                HttpContext.Session.Remove("CurrentAWXJobStartTime");
+
+                return new JsonResult(new { success = true, message = "Job finalizado e auditoria salva." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "IndexModel.OnGetFinalizeAWXJobAsync: Erro ao finalizar Job {JobId}.", jobId);
+                return new JsonResult(new { success = false, message = $"ERRO: {ex.Message}" });
             }
         }
     }

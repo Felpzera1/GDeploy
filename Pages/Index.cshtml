@@ -499,6 +499,29 @@ Aguardando novos logs do AWX...
                         // Se o job terminou, parar o polling
                         if (data.status === 'successful' || data.status === 'failed' || data.status === 'error') {
                             clearInterval(pollInterval);
+                            
+                            // Chamar o handler para finalizar o job, salvar auditoria e limpar a Session no backend
+                            fetch(`/Index?handler=FinalizeAWXJob&jobId=${jobId}&finalStatus=${data.status}&output=${encodeURIComponent(data.output)}`, {
+                                method: 'GET',
+                                headers: {
+                                    'RequestVerificationToken': antiForgeryToken
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(finalizeData => {
+                                if (finalizeData.success) {
+                                    console.log(`Job ${jobId} finalizado e Session limpa.`);
+                                    // Limpar o estado visual no frontend
+                                    awxDeployButton.disabled = false;
+                                    awxSpinner.style.display = 'none';
+                                    awxDeployButtonText.textContent = 'Executar Automação';
+                                } else {
+                                    console.error(`Erro ao finalizar Job ${jobId}:`, finalizeData.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error(`Erro de comunicação ao finalizar Job ${jobId}:`, error);
+                            });
                         }
                     })
                     .catch(error => {

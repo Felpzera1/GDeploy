@@ -1,0 +1,11 @@
+{
+  "Timestamp": "2025-11-03 16:08:17",
+  "Username": "felipe.bornhausen@redetop.com.br",
+  "Hostname": "pdv007001",
+  "PackageName": "Loja 007 - TeamViewer Host",
+  "Success": true,
+  "Output": "-> Verificando conectividade com 'pdv007001'...\r\n   SUCESSO: Host 'pdv007001' (192.168.182.101) respondeu em 5ms.\r\n---------------------------------------\r\n-> Iniciando o comando de deploy PDQ...\r\n\r\n--- Saída do Script PowerShell ---\r\n\nSUCESSO: Comando de deploy enviado/concluído com sucesso pelo script.\r\n",
+  "DetailedOutput": "-> Verificando conectividade com 'pdv007001'...\r\n   SUCESSO: Host 'pdv007001' (192.168.182.101) respondeu em 5ms.\r\n---------------------------------------\r\n-> Iniciando o comando de deploy PDQ...\r\n\r\n--- Saída do Script PowerShell ---\r\n\nSUCESSO: Comando de deploy enviado/concluído com sucesso pelo script.\r\n",
+  "LogFile": "deploy_detailed_20251103_160817_pdv007001_felipe_bornhausen_redetop_com_br.json",
+  "CreatedAt": "2025-11-03 16:08:17"
+}
