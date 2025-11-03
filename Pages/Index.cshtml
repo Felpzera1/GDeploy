@@ -539,10 +539,6 @@ Aguardando novos logs do AWX...
             }
 
             // Lógica para recuperar Job ID da Session ao carregar a página
-            const persistedJobId = @(Context.Session.GetInt32("CurrentAWXJobId")?.ToString() ?? "null");
-            const persistedHostname = '@(Context.Session.GetString("CurrentAWXHostname") ?? "")';
-            const persistedTemplateName = '@(Context.Session.GetString("CurrentAWXTemplateName") ?? "")';
-            const persistedStartTime = '@(Context.Session.GetString("CurrentAWXJobStartTime") ?? "")';
 
             if (persistedJobId !== null && persistedJobId > 0) {
                 // Mudar para a aba AWX
