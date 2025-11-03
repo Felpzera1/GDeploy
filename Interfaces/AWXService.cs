@@ -172,5 +172,45 @@ namespace GtopPdqNet.Services
                 return ("error", $"ERRO Comunicação AWX: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Verifica se um host existe em algum inventário do AWX.
+        /// </summary>
+        /// <param name="hostname">O nome do host a ser verificado.</param>
+        /// <returns>True se o host for encontrado, False caso contrário.</returns>
+        public async Task<bool> HostExistsInInventoryAsync(string hostname)
+        {
+            _logger.LogInformation("AWXService: Verificando existência do host '{Host}' no AWX.", hostname);
+
+            try
+            {
+                // Endpoint para listar hosts com filtro pelo nome
+                // O filtro 'name' é case-insensitive por padrão no AWX
+                var response = await _httpClient.GetAsync($"hosts/?name={Uri.EscapeDataString(hostname)}");
+                response.EnsureSuccessStatusCode();
+                var content = await response.Content.ReadAsStringAsync();
+                var jsonDoc = JsonDocument.Parse(content);
+
+                // O AWX retorna um objeto com a propriedade "count" que indica o número de resultados
+                int count = jsonDoc.RootElement.GetProperty("count").GetInt32();
+
+                if (count > 0)
+                {
+                    _logger.LogInformation("AWXService: Host '{Host}' encontrado no AWX (Count: {Count}).", hostname, count);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("AWXService: Host '{Host}' NÃO encontrado no AWX.", hostname);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao verificar a existência do host '{Host}' no AWX.", hostname);
+                // Em caso de erro de comunicação, por segurança, retornamos false para evitar um deploy indesejado.
+                return false;
+            }
+        }
     }
 }
