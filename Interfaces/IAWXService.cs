@@ -12,6 +12,9 @@ namespace GtopPdqNet.Interfaces
         // Retorna o ID do Job disparado para monitoramento
         Task<int> LaunchJobTemplateAsync(string hostname, string templateName);
         
+        // Novo método para verificar se um host existe em um inventário
+        Task<bool> HostExistsInInventoryAsync(string hostname);
+        
         // Método para monitorar o status de um Job
         // Retorna o status (e.g., 'pending', 'running', 'successful', 'failed') e o output do log
         Task<(string status, string output)> GetJobStatusAndOutputAsync(int jobId);

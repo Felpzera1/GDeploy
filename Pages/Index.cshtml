@@ -437,6 +437,16 @@ Aguardando novos logs do AWX...
                         jobId: data.jobId
                     });
 
+                    if (!data.success) {
+                        // Exibir erro visual na interface
+                        const awxErrorContainer = document.getElementById('awxErrorContainer');
+                        awxErrorContainer.textContent = data.log || `Erro desconhecido ao processar o host ${hostname}.`;
+                        awxErrorContainer.style.display = 'block';
+                    } else {
+                        // Limpar erro visual se for sucesso
+                        document.getElementById('awxErrorContainer').style.display = 'none';
+                    }
+
                     _displayAWXLog(`COMPUTADOR: ${hostname}\nJob ID: ${data.jobId}\n${data.log || '[Sem log]'}`, data.success);
                     _scrollToBottom(awxLogContainer);
                     
@@ -455,6 +465,11 @@ Aguardando novos logs do AWX...
                         log: `ERRO Comunicação:\n${error.message}`,
                         jobId: null
                     });
+                    // Exibir erro de comunicação visual na interface
+                    const awxErrorContainer = document.getElementById('awxErrorContainer');
+                    awxErrorContainer.textContent = `ERRO DE COMUNICAÇÃO: ${error.message}`;
+                    awxErrorContainer.style.display = 'block';
+
                     _displayAWXLog(`COMPUTADOR: ${hostname}\nERRO Comunicação:\n${error.message}`, false);
                     _scrollToBottom(awxLogContainer);
                     processAWXHostnames(hostnames, selectedTemplate, index + 1, results);

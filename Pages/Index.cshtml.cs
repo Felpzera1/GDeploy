@@ -229,6 +229,17 @@ namespace GtopPdqNet.Pages
 
             try
             {
+                // --- NOVA VALIDAÇÃO DE HOST NO AWX ---
+                bool hostExists = await _awxService.HostExistsInInventoryAsync(hostname);
+                if (!hostExists)
+                {
+                    string errorMessage = $"ERRO: O host '{hostname}' não foi encontrado em nenhum inventário do AWX. Deploy cancelado.";
+                    _logger.LogWarning("IndexModel.OnPostLaunchAWXAsync: {Error}", errorMessage);
+                    logBuilder.AppendLine(errorMessage);
+                    return new JsonResult(new { success = false, log = logBuilder.ToString(), jobId = (int?)null });
+                }
+                // --- FIM DA VALIDAÇÃO ---
+
                 _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Disparando Job Template no AWX para: {Hostname}", hostname);
                 logBuilder.AppendLine($"-> Disparando Job Template \'{templateName}\' para \'{hostname}\'...");
 
