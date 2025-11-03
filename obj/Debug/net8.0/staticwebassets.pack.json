@@ -17,12 +17,20 @@
       "PackagePath": "staticwebassets\\images\\Logotipo_Gtop_Azul.png"
     },
     {
+      "Id": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\awx.png",
+      "PackagePath": "staticwebassets\\images\\awx.png"
+    },
+    {
       "Id": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\background_gtop.jpg",
       "PackagePath": "staticwebassets\\images\\background_gtop.jpg"
     },
     {
       "Id": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\background_gtop_old.JPG",
       "PackagePath": "staticwebassets\\images\\background_gtop_old.JPG"
+    },
+    {
+      "Id": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\windows.png",
+      "PackagePath": "staticwebassets\\images\\windows.png"
     },
     {
       "Id": "C:\\GtopPdqNet_Linux\\wwwroot\\js\\logs.js",

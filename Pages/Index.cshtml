@@ -34,11 +34,13 @@
 <ul class="nav nav-tabs mt-4" id="deployTabs" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pdq-tab" data-bs-toggle="tab" data-bs-target="#pdq-content" type="button" role="tab" aria-controls="pdq-content" aria-selected="true">
+            <img src="~/images/Windows.png" alt="PDQ Deploy Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
             PDQ Deploy (Windows)
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="linux-tab" data-bs-toggle="tab" data-bs-target="#linux-content" type="button" role="tab" aria-controls="linux-content" aria-selected="false">
+            <img src="~/images/awx.png" alt="AWX Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
             AWX (Linux)
         </button>
     </li>
@@ -131,21 +133,20 @@ Aguardando novos logs do PDQ Deploy...
 
                     <form id="awxForm">
                         <div class="mb-3">
-                            <label for="awxHostname" class="form-label">Hostname Linux</label>
+                            <label for="awxHostname" class="form-label">IP - Linux</label>
                             <input type="text" id="awxHostname" class="form-control" 
-                                   placeholder="Ex.: caixa-linux-01; caixa-linux-02 (máx. 5 computadores)" />
-                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;).</small>
+                                   placeholder="Adicione o IP (máx. 5 computadores)" />
+                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;) Apenas Hosts cadastrados no AWX e com SSH habilitado irão funcionar.</small>
                         </div>
                         <div class="mb-3">
-                            <label for="awxJobTemplate" class="form-label">Job Template</label>
+                            <label for="awxJobTemplate" class="form-label">Pacotes</label>
                             <select id="awxJobTemplate" class="form-select">
                                 <option value="">-- Carregando Job Templates --</option>
                             </select>
-                            <small class="form-text text-muted">Selecione um template de automação do AWX.</small>
                         </div>
                         <div class="d-grid gap-2 mt-4">
                             <button type="button" id="awxDeployButton" class="btn btn-primary btn-lg">
-                                <span id="awxDeployButtonText">Executar Automação</span>
+                                <span id="awxDeployButtonText">Realizar Deploy</span>
                                 <span id="awxDeploySpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
                             </button>
                         </div>

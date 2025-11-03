@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "2fqKL464/aLypxhBaY4S1lGsCA+JO/l0tzpGIKrK9Lk=",
+  "Hash": "D/EFKbdFD6TNKg5OAbIpW/6lnoVc9n5ek8vTsewu430=",
   "Source": "GtopPdqNet",
   "BasePath": "_content/GtopPdqNet",
   "Mode": "Default",
@@ -93,6 +93,25 @@
       "OriginalItemSpec": "wwwroot\\gtop-icon.ico"
     },
     {
+      "Identity": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\awx.png",
+      "SourceId": "GtopPdqNet",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\GtopPdqNet_Linux\\wwwroot\\",
+      "BasePath": "_content/GtopPdqNet",
+      "RelativePath": "images/awx.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\awx.png"
+    },
+    {
       "Identity": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\background_gtop_old.JPG",
       "SourceId": "GtopPdqNet",
       "SourceType": "Discovered",
@@ -148,6 +167,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\Logotipo_Gtop_Azul.png"
+    },
+    {
+      "Identity": "C:\\GtopPdqNet_Linux\\wwwroot\\images\\windows.png",
+      "SourceId": "GtopPdqNet",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\GtopPdqNet_Linux\\wwwroot\\",
+      "BasePath": "_content/GtopPdqNet",
+      "RelativePath": "images/windows.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\windows.png"
     },
     {
       "Identity": "C:\\GtopPdqNet_Linux\\wwwroot\\js\\logs.js",
