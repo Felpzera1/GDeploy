@@ -172,9 +172,17 @@ namespace GtopPdqNet.Services
             try
             {
                 var allLogs = new List<object>();
-                var files = Directory.GetFiles(_auditLogPath, "deploy_audit_*.json");
+                
+                // Buscar arquivos de log do PDQ Deploy
+                var pdqFiles = Directory.GetFiles(_auditLogPath, "deploy_audit_*.json");
+                
+                // Buscar arquivos de log do AWX
+                var awxFiles = Directory.GetFiles(_auditLogPath, "awx_audit_*.json");
+                
+                // Combinar ambos os arrays de arquivos
+                var allFiles = pdqFiles.Concat(awxFiles).ToArray();
 
-                foreach (var file in files)
+                foreach (var file in allFiles)
                 {
                     try
                     {

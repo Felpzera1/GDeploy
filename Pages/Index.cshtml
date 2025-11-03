@@ -514,6 +514,39 @@ Aguardando novos logs do AWX...
                 awxLogOutput.textContent += `${logText}\n`;
                 awxLogOutput.textContent += `---------------------------------------\n`;
             }
+
+            // Lógica para recuperar Job ID da Session ao carregar a página
+            const persistedJobId = @(Context.Session.GetInt32("CurrentAWXJobId")?.ToString() ?? "null");
+            const persistedHostname = '@(Context.Session.GetString("CurrentAWXHostname") ?? "")';
+            const persistedTemplateName = '@(Context.Session.GetString("CurrentAWXTemplateName") ?? "")';
+            const persistedStartTime = '@(Context.Session.GetString("CurrentAWXJobStartTime") ?? "")';
+
+            if (persistedJobId !== null && persistedJobId > 0) {
+                // Mudar para a aba AWX
+                const awxTab = document.getElementById('linux-tab');
+                const awxContent = document.getElementById('linux-content');
+                
+                awxTab.classList.add('active');
+                awxTab.setAttribute('aria-selected', 'true');
+                awxContent.classList.add('active', 'show');
+
+                // Desativar o botão de deploy
+                awxDeployButton.disabled = true;
+                awxSpinner.style.display = 'inline-block';
+                awxDeployButtonText.textContent = 'Monitorando...';
+
+                // Exibir mensagem de recuperação
+                const awxLogOutput = document.getElementById('awxLogOutput');
+                awxLogOutput.textContent = `[${_getCurrentTime()}] Job AWX recuperado da sessão:\n`;
+                awxLogOutput.textContent += `Job ID: ${persistedJobId}\n`;
+                awxLogOutput.textContent += `Host: ${persistedHostname}\n`;
+                awxLogOutput.textContent += `Template: ${persistedTemplateName}\n`;
+                awxLogOutput.textContent += `Início: ${persistedStartTime}\n`;
+                awxLogOutput.textContent += `---------------------------------------\n`;
+                
+                // Iniciar o monitoramento
+                monitorAWXJob(persistedJobId, persistedHostname);
+            }
         });
     </script>
 

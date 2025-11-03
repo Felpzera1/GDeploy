@@ -220,7 +220,7 @@
                     <td class="text-nowrap">${log.Timestamp || "N/A"}</td>
                     <td class="text-truncate" style="max-width: 200px;" title="${log.Username || "N/A"}">${log.Username || "N/A"}</td>
                     <td>${log.Hostname || "N/A"}</td>
-                    <td class="text-truncate" style="max-width: 250px;" title="${log.PackageName || "N/A"}">${log.PackageName || "N/A"}</td>
+                    <td class="text-truncate" style="max-width: 250px;" title="${log.PackageName || log.TemplateName || "N/A"}">${log.PackageName || log.TemplateName || "N/A"}</td>
                     <td>${statusBadge}</td>
                     <td class="text-nowrap">
                         <div class="btn-group" role="group">

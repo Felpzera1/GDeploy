@@ -255,6 +255,12 @@ namespace GtopPdqNet.Pages
                 // Salvar log de auditoria do AWX
                 await _auditService.LogAWXDeployAsync(username, hostname, templateName, true, fullLog);
 
+                // Persistir o Job ID em Session para recuperação após navegação
+                HttpContext.Session.SetInt32("CurrentAWXJobId", jobId);
+                HttpContext.Session.SetString("CurrentAWXHostname", hostname);
+                HttpContext.Session.SetString("CurrentAWXTemplateName", templateName);
+                HttpContext.Session.SetString("CurrentAWXJobStartTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
                 return new JsonResult(new { success = true, log = fullLog, jobId = jobId });
             }
             catch (Exception ex)
@@ -265,6 +271,12 @@ namespace GtopPdqNet.Pages
                 var fullLog = logBuilder.ToString();
                 // Salvar log de auditoria mesmo em caso de erro
                 await _auditService.LogAWXDeployAsync(username, hostname, templateName, false, fullLog);
+                
+                // Limpar Session em caso de erro
+                HttpContext.Session.Remove("CurrentAWXJobId");
+                HttpContext.Session.Remove("CurrentAWXHostname");
+                HttpContext.Session.Remove("CurrentAWXTemplateName");
+                HttpContext.Session.Remove("CurrentAWXJobStartTime");
                 
                 return new JsonResult(new { success = false, log = fullLog, jobId = (int?)null });
             }
