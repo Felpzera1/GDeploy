@@ -1,0 +1,12 @@
+{
+  "Timestamp": "2025-11-04 14:16:36",
+  "Username": "felipe.bornhausen@redetop.com.br",
+  "Hostname": "192.168.1.94",
+  "TemplateName": "Pingar Host",
+  "DeployType": "AWX",
+  "Success": false,
+  "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\n\nERRO: Response status code does not indicate success: 400 (Bad Request).\r\n",
+  "DetailedOutput": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\n\nERRO: Response status code does not indicate success: 400 (Bad Request).\r\n",
+  "LogFile": "awx_detailed_20251104_141636_192.168.1.94_Pingar_Host_felipe_bornhausen_redetop_com_br.json",
+  "CreatedAt": "2025-11-04 14:16:36"
+}
