@@ -270,12 +270,18 @@ namespace GtopPdqNet.Services
 
             try
             {
-                // Endpoint para adicionar host a um inventario: POST /api/v2/inventories/{id}/hosts/
-                var payload = new { name = hostname };
+                // Endpoint para criar host: POST /api/v2/hosts/
+                // Incluindo o inventory_id e a credencial (ID 5)
+                var payload = new 
+                { 
+                    name = hostname, 
+                    inventory = inventoryId,
+                    credential = 5 // ID da credencial "Senha RPDV"
+                };
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync($"inventories/{inventoryId}/hosts/", content);
+                var response = await _httpClient.PostAsync($"hosts/", content); // Mudança de URL
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -284,7 +290,7 @@ namespace GtopPdqNet.Services
                     return false;
                 }
 
-                _logger.LogInformation("AWXService: Host '{Host}' adicionado com sucesso ao inventario {InventoryId}.", hostname, inventoryId);
+                _logger.LogInformation("AWXService: Host '{Host}' adicionado com sucesso ao inventario {InventoryId} com Credencial 5.", hostname, inventoryId);
                 return true;
             }
             catch (Exception ex)
