@@ -1,0 +1,12 @@
+{
+  "Timestamp": "2025-11-03 17:40:37",
+  "Username": "felipe.bornhausen@redetop.com.br",
+  "Hostname": "192.168.1.94",
+  "TemplateName": "Atualizar Linux (Cuidado)",
+  "DeployType": "AWX",
+  "Success": false,
+  "Output": "SSH password: \nBECOME password[defaults to SSH password]: \n[WARNING]: Invalid characters were found in group names but not replaced, use\n-vvvv to see details\n\nPLAY [Atualizar sistema Linux (apt)] *******************************************\n\nTASK [Gathering Facts] *********************************************************\nfatal: [192.168.1.94]: UNREACHABLE! => {\"changed\": false, \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 192.168.1.94 port 22: No route to host\", \"unreachable\": true}\n\nPLAY RECAP *********************************************************************\n192.168.1.94               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   \n",
+  "DetailedOutput": "SSH password: \nBECOME password[defaults to SSH password]: \n[WARNING]: Invalid characters were found in group names but not replaced, use\n-vvvv to see details\n\nPLAY [Atualizar sistema Linux (apt)] *******************************************\n\nTASK [Gathering Facts] *********************************************************\nfatal: [192.168.1.94]: UNREACHABLE! => {\"changed\": false, \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 192.168.1.94 port 22: No route to host\", \"unreachable\": true}\n\nPLAY RECAP *********************************************************************\n192.168.1.94               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   \n",
+  "LogFile": "awx_detailed_20251103_174037_192.168.1.94_Atualizar_Linux_(Cuidado)_felipe_bornhausen_redetop_com_br.json",
+  "CreatedAt": "2025-11-03 17:40:37"
+}

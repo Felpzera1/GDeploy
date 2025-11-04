@@ -102,9 +102,11 @@ namespace GtopPdqNet.Services
                 }
                 
                 // 2. Criar o payload para o POST
-                // O 'extra_vars' é crucial para passar o hostname (ou qualquer outra variável) para o playbook
+                // O 'limit' restringe a execução apenas ao host especificado
+                // O 'extra_vars' passa o hostname (ou qualquer outra variável) para o playbook
                 var payload = new 
                 {
+                    limit = hostname,
                     extra_vars = new { target_host = hostname }
                 };
                 

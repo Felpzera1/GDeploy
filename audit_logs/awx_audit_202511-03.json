@@ -1,29 +1,11 @@
 [
   {
-    "Timestamp": "2025-11-03 16:23:55",
+    "Timestamp": "2025-11-03 17:40:37",
     "Username": "felipe.bornhausen@redetop.com.br",
     "Hostname": "192.168.1.94",
-    "TemplateName": "Pingar Host",
+    "TemplateName": "Atualizar Linux (Cuidado)",
     "DeployType": "AWX",
-    "Success": true,
-    "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\nSUCESSO: Job Template disparado com sucesso!\r\nJob ID: 85\r\nMonitorando execução...\r\n"
-  },
-  {
-    "Timestamp": "2025-11-03 16:25:06",
-    "Username": "felipe.bornhausen@redetop.com.br",
-    "Hostname": "192.168.1.94",
-    "TemplateName": "Pingar Host",
-    "DeployType": "AWX",
-    "Success": true,
-    "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\nSUCESSO: Job Template disparado com sucesso!\r\nJob ID: 87\r\nMonitorando execução...\r\n"
-  },
-  {
-    "Timestamp": "2025-11-03 16:51:15",
-    "Username": "felipe.bornhausen@redetop.com.br",
-    "Hostname": "192.168.1.94",
-    "TemplateName": "Pingar Host",
-    "DeployType": "AWX",
-    "Success": true,
-    "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\nSUCESSO: Job Template disparado com sucesso!\r\nJob ID: 89\r\nMonitorando execução...\r\n"
+    "Success": false,
+    "Output": "SSH password: \nBECOME password[defaults to SSH password]: \n[WARNING]: Invalid characters were found in group names but not replaced, use\n-vvvv to see details\n\nPLAY [Atualizar sistema Linux (apt)] *******************************************\n\nTASK [Gathering Facts] *********************************************************\nfatal: [192.168.1.94]: UNREACHABLE! => {\"changed\": false, \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 192.168.1.94 port 22: No route to host\", \"unreachable\": true}\n\nPLAY RECAP *********************************************************************\n192.168.1.94               : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   \n"
   }
 ]
