@@ -236,52 +236,52 @@
             "rid": "win-arm64",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-arm64/lib/netstandard1.6/microsoft.management.infrastructure.native.dll": {
             "rid": "win-arm64",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x64/lib/netstandard1.6/microsoft.management.infrastructure.dll": {
             "rid": "win-x64",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-x64/lib/netstandard1.6/microsoft.management.infrastructure.native.dll": {
             "rid": "win-x64",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x86/lib/netstandard1.6/microsoft.management.infrastructure.dll": {
             "rid": "win-x86",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-x86/lib/netstandard1.6/microsoft.management.infrastructure.native.dll": {
             "rid": "win-x86",
             "assetType": "runtime",
             "assemblyVersion": "1.0.0.0",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-arm64/native/microsoft.management.infrastructure.native.unmanaged.dll": {
             "rid": "win-arm64",
             "assetType": "native",
-            "fileVersion": "10.0.17763.30000"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x64/native/microsoft.management.infrastructure.native.unmanaged.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "6.3.9600.18144"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x86/native/microsoft.management.infrastructure.native.unmanaged.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "6.3.9600.18144"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -418,42 +418,42 @@
           "runtimes/win-arm/native/PowerShell.Core.Instrumentation.dll": {
             "rid": "win-arm",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-arm/native/pwrshplugin.dll": {
             "rid": "win-arm",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-arm64/native/PowerShell.Core.Instrumentation.dll": {
             "rid": "win-arm64",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-arm64/native/pwrshplugin.dll": {
             "rid": "win-arm64",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x64/native/PowerShell.Core.Instrumentation.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x64/native/pwrshplugin.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x86/native/PowerShell.Core.Instrumentation.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           },
           "runtimes/win-x86/native/pwrshplugin.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "10.0.10011.16384"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -522,25 +522,25 @@
             "rid": "win-arm",
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25098.1000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-arm64/lib/net5.0/getfilesiginforedistwrapper.dll": {
             "rid": "win-arm64",
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25098.1000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-x64/lib/net5.0/getfilesiginforedistwrapper.dll": {
             "rid": "win-x64",
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25098.1000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-x86/lib/net5.0/getfilesiginforedistwrapper.dll": {
             "rid": "win-x86",
             "assetType": "runtime",
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.25098.1000"
+            "fileVersion": "10.0.10011.16384"
           },
           "runtimes/win-arm/native/getfilesiginforedist.dll": {
             "rid": "win-arm",
@@ -740,7 +740,7 @@
           "runtimes/win-arm64/native/sni.dll": {
             "rid": "win-arm64",
             "assetType": "native",
-            "fileVersion": "4.6.25512.1"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -749,7 +749,7 @@
           "runtimes/win-x64/native/sni.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "4.6.25512.1"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -758,7 +758,7 @@
           "runtimes/win-x86/native/sni.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "4.6.25512.1"
+            "fileVersion": "0.0.0.0"
           }
         }
       },

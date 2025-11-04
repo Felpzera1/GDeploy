@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\GtopPdqNet_Linux\\GtopPdqNet.csproj": {}
+    "/home/ubuntu/GDeploy_latest/GtopPdqNet.csproj": {}
   },
   "projects": {
-    "C:\\GtopPdqNet_Linux\\GtopPdqNet.csproj": {
+    "/home/ubuntu/GDeploy_latest/GtopPdqNet.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\GtopPdqNet_Linux\\GtopPdqNet.csproj",
+        "projectUniqueName": "/home/ubuntu/GDeploy_latest/GtopPdqNet.csproj",
         "projectName": "GtopPdqNet",
-        "projectPath": "C:\\GtopPdqNet_Linux\\GtopPdqNet.csproj",
-        "packagesPath": "C:\\Users\\pdq.site\\.nuget\\packages\\",
-        "outputPath": "C:\\GtopPdqNet_Linux\\obj\\",
+        "projectPath": "/home/ubuntu/GDeploy_latest/GtopPdqNet.csproj",
+        "packagesPath": "/home/ubuntu/.nuget/packages/",
+        "outputPath": "/home/ubuntu/GDeploy_latest/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\pdq.site\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/ubuntu/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -71,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.408/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/bin/sdk/8.0.408/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

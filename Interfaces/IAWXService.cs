@@ -10,7 +10,7 @@ namespace GtopPdqNet.Interfaces
         
         // Método para disparar um Job Template no AWX
         // Retorna o ID do Job disparado para monitoramento
-        Task<int> LaunchJobTemplateAsync(string hostname, string templateName);
+        Task<int> LaunchJobTemplateAsync(string hostname, string templateName, int? inventoryId = null);
         
         // Novo método para verificar se um host existe em um inventário
         Task<bool> HostExistsInInventoryAsync(string hostname);
@@ -18,5 +18,10 @@ namespace GtopPdqNet.Interfaces
         // Método para monitorar o status de um Job
         // Retorna o status (e.g., 'pending', 'running', 'successful', 'failed') e o output do log
         Task<(string status, string output)> GetJobStatusAndOutputAsync(int jobId);
+        
+        // Métodos para criar e gerenciar inventários ad-hoc
+        Task<int> CreateTemporaryInventoryAsync(string inventoryName, int organizationId);
+        Task<bool> AddHostToInventoryAsync(int inventoryId, string hostname);
+        Task<bool> DeleteInventoryAsync(int inventoryId);
     }
 }

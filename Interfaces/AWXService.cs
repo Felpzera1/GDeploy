@@ -88,7 +88,7 @@ namespace GtopPdqNet.Services
             }
         }
 
-                public async Task<int> LaunchJobTemplateAsync(string hostname, string templateName)
+                public async Task<int> LaunchJobTemplateAsync(string hostname, string templateName, int? inventoryId = null)
         {
             _logger.LogInformation("AWXService: Lançando Job Template '{Template}' para o host '{Host}'.", templateName, hostname);
             
@@ -102,15 +102,17 @@ namespace GtopPdqNet.Services
                 }
                 
                 // 2. Criar o payload para o POST
-                // O 'inventory' é obrigatório porque o Job Template tem "Prompt on launch" habilitado
-                // O 'limit' restringe a execução apenas ao host especificado
-                // O 'extra_vars' passa o hostname (ou qualquer outra variável) para o playbook
-                var payload = new 
+                // Se um inventoryId for fornecido, use-o; caso contrario, use o limit
+                // O 'extra_vars' passa o hostname (ou qualquer outra variavel) para o playbook
+                object payload;
+                if (inventoryId.HasValue)
                 {
-                    inventory = 5, // ID do inventário "Infraestrutura"
-                    limit = hostname,
-                    extra_vars = new { target_host = hostname }
-                };
+                    payload = new { inventory = inventoryId.Value, extra_vars = new { target_host = hostname } };
+                }
+                else
+                {
+                    payload = new { limit = hostname, extra_vars = new { target_host = hostname } };
+                }
                 
                 var jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
@@ -213,6 +215,112 @@ namespace GtopPdqNet.Services
             {
                 _logger.LogError(ex, "Erro ao verificar a existência do host '{Host}' no AWX.", hostname);
                 // Em caso de erro de comunicação, por segurança, retornamos false para evitar um deploy indesejado.
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Cria um inventario temporario no AWX.
+        /// </summary>
+        /// <param name="inventoryName">O nome do inventario a ser criado.</param>
+        /// <param name="organizationId">O ID da organizacao a qual o inventario pertencera.</param>
+        /// <returns>O ID do inventario criado ou 0 se falhar.</returns>
+        public async Task<int> CreateTemporaryInventoryAsync(string inventoryName, int organizationId)
+        {
+            _logger.LogInformation("AWXService: Criando inventario temporario '{InventoryName}' na organizacao {OrgId}.", inventoryName, organizationId);
+            
+            try
+            {
+                var payload = new { name = inventoryName, organization = organizationId };
+                var jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                
+                var response = await _httpClient.PostAsync("inventories/", content);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AWX Create Inventory Failed: Status {Status}. Response: {Response}", response.StatusCode, errorContent);
+                    return 0;
+                }
+                
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var jsonDoc = JsonDocument.Parse(responseContent);
+                int inventoryId = jsonDoc.RootElement.GetProperty("id").GetInt32();
+                
+                _logger.LogInformation("AWXService: Inventario criado com sucesso. ID: {InventoryId}", inventoryId);
+                return inventoryId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao criar inventario '{InventoryName}' no AWX.", inventoryName);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Adiciona um host a um inventario existente no AWX.
+        /// </summary>
+        /// <param name="inventoryId">O ID do inventario.</param>
+        /// <param name="hostname">O nome do host a ser adicionado.</param>
+        /// <returns>True se o host foi adicionado com sucesso, False caso contrario.</returns>
+        public async Task<bool> AddHostToInventoryAsync(int inventoryId, string hostname)
+        {
+            _logger.LogInformation("AWXService: Adicionando host '{Host}' ao inventario {InventoryId}.", hostname, inventoryId);
+
+            try
+            {
+                // Endpoint para adicionar host a um inventario: POST /api/v2/inventories/{id}/hosts/
+                var payload = new { name = hostname };
+                var jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync($"inventories/{inventoryId}/hosts/", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AWX Add Host Failed: Status {Status}. Response: {Response}", response.StatusCode, errorContent);
+                    return false;
+                }
+
+                _logger.LogInformation("AWXService: Host '{Host}' adicionado com sucesso ao inventario {InventoryId}.", hostname, inventoryId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao adicionar host '{Host}' ao inventario {InventoryId} no AWX.", hostname, inventoryId);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deleta um inventario temporario no AWX.
+        /// </summary>
+        /// <param name="inventoryId">O ID do inventario a ser deletado.</param>
+        /// <returns>True se o inventario foi deletado com sucesso, False caso contrario.</returns>
+        public async Task<bool> DeleteInventoryAsync(int inventoryId)
+        {
+            _logger.LogInformation("AWXService: Deletando inventario {InventoryId}.", inventoryId);
+
+            try
+            {
+                // Endpoint para deletar inventario: DELETE /api/v2/inventories/{id}/
+                var response = await _httpClient.DeleteAsync($"inventories/{inventoryId}/");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AWX Delete Inventory Failed: Status {Status}. Response: {Response}", response.StatusCode, errorContent);
+                    return false;
+                }
+
+                _logger.LogInformation("AWXService: Inventario {InventoryId} deletado com sucesso.", inventoryId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao deletar inventario {InventoryId} no AWX.", inventoryId);
                 return false;
             }
         }

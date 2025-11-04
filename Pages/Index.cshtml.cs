@@ -243,25 +243,61 @@ namespace GtopPdqNet.Pages
                 // --- FIM DA VALIDAÇÃO ---
 
                 _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Disparando Job Template no AWX para: {Hostname}", hostname);
-                logBuilder.AppendLine($"-> Disparando Job Template \'{templateName}\' para \'{hostname}\'...");
+                logBuilder.AppendLine($"-> Criando inventario ad-hoc para \'{hostname}\'...");
 
-                // Disparar o Job Template no AWX
-                int jobId = await _awxService.LaunchJobTemplateAsync(hostname, templateName);
-                _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Job disparado com sucesso. Job ID: {JobId}", jobId);
+                // --- CRIAR INVENTARIO AD-HOC ---
+                // Gerar um nome unico para o inventario temporario
+                string tempInventoryName = $"deploy_temp_{hostname}_{DateTime.Now:yyyyMMddHHmmss}";
+                int tempInventoryId = await _awxService.CreateTemporaryInventoryAsync(tempInventoryName, 1); // organizationId = 1 (padrao)
+                
+                if (tempInventoryId == 0)
+                {
+                    string errorMessage = $"ERRO: Falha ao criar inventario temporario para \'{hostname}\'. Deploy cancelado.";
+                    _logger.LogError("IndexModel.OnPostLaunchAWXAsync: {Error}", errorMessage);
+                    logBuilder.AppendLine(errorMessage);
+                    return new JsonResult(new { success = false, log = logBuilder.ToString(), jobId = (int?)null });
+                }
+
+                logBuilder.AppendLine($"OK Inventario ad-hoc criado com sucesso (ID: {tempInventoryId})");
+                _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Inventario ad-hoc criado. ID: {InventoryId}", tempInventoryId);
+
+                // --- ADICIONAR HOST AO INVENTARIO ---
+                logBuilder.AppendLine($"-> Adicionando host \'{hostname}\' ao inventario...");
+                bool hostAdded = await _awxService.AddHostToInventoryAsync(tempInventoryId, hostname);
+                
+                if (!hostAdded)
+                {
+                    string errorMessage = $"ERRO: Falha ao adicionar host \'{hostname}\' ao inventario temporario. Deploy cancelado.";
+                    _logger.LogError("IndexModel.OnPostLaunchAWXAsync: {Error}", errorMessage);
+                    logBuilder.AppendLine(errorMessage);
+                    
+                    // Tentar deletar o inventario criado
+                    await _awxService.DeleteInventoryAsync(tempInventoryId);
+                    return new JsonResult(new { success = false, log = logBuilder.ToString(), jobId = (int?)null });
+                }
+
+                logBuilder.AppendLine($"OK Host adicionado com sucesso ao inventario");
+                _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Host adicionado ao inventario. Host: {Host}, InventoryId: {InventoryId}", hostname, tempInventoryId);
+
+                // --- DISPARAR JOB TEMPLATE COM INVENTARIO AD-HOC ---
+                logBuilder.AppendLine($"-> Disparando Job Template \'{templateName}\' com inventario ad-hoc...");
+                int jobId = await _awxService.LaunchJobTemplateAsync(hostname, templateName, tempInventoryId);
+                _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Job disparado com sucesso. Job ID: {JobId}, InventoryId: {InventoryId}", jobId, tempInventoryId);
                 
                 logBuilder.AppendLine($"SUCESSO: Job Template disparado com sucesso!");
                 logBuilder.AppendLine($"Job ID: {jobId}");
-                logBuilder.AppendLine("Monitorando execução...");
+                logBuilder.AppendLine("Monitorando execucao...");
 
                 var fullLog = logBuilder.ToString();
-                // NÃO salvar log de auditoria aqui - será salvo quando o Job terminar
+                // NAO salvar log de auditoria aqui - sera salvo quando o Job terminar
                 // await _auditService.LogAWXDeployAsync(username, hostname, templateName, true, fullLog);
 
-                // Persistir o Job ID em Session para recuperação após navegação
+                // Persistir o Job ID e o Inventory ID em Session para recuperacao apos navegacao
                 HttpContext.Session.SetInt32("CurrentAWXJobId", jobId);
                 HttpContext.Session.SetString("CurrentAWXHostname", hostname);
                 HttpContext.Session.SetString("CurrentAWXTemplateName", templateName);
                 HttpContext.Session.SetString("CurrentAWXJobStartTime", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                HttpContext.Session.SetInt32("CurrentAWXTempInventoryId", tempInventoryId); // Armazenar para limpeza posterior
 
                 return new JsonResult(new { success = true, log = fullLog, jobId = jobId });
             }
@@ -315,18 +351,37 @@ namespace GtopPdqNet.Pages
                 var username = User?.Identity?.Name ?? "Usuario Desconhecido";
                 var hostname = HttpContext.Session.GetString("CurrentAWXHostname") ?? "Desconhecido";
                 var templateName = HttpContext.Session.GetString("CurrentAWXTemplateName") ?? "Desconhecido";
+                var tempInventoryIdObj = HttpContext.Session.GetInt32("CurrentAWXTempInventoryId");
 
                 bool success = finalStatus == "successful";
 
                 await _auditService.LogAWXDeployAsync(username, hostname, templateName, success, output);
                 _logger.LogInformation("IndexModel.OnGetFinalizeAWXJobAsync: Log de auditoria salvo para Job {JobId} com sucesso: {Success}", jobId, success);
 
+                // Deletar inventario temporario
+                if (tempInventoryIdObj.HasValue)
+                {
+                    int tempInventoryId = tempInventoryIdObj.Value;
+                    _logger.LogInformation("IndexModel.OnGetFinalizeAWXJobAsync: Deletando inventario temporario {InventoryId}.", tempInventoryId);
+                    
+                    bool inventoryDeleted = await _awxService.DeleteInventoryAsync(tempInventoryId);
+                    if (inventoryDeleted)
+                    {
+                        _logger.LogInformation("IndexModel.OnGetFinalizeAWXJobAsync: Inventario temporario {InventoryId} deletado com sucesso.", tempInventoryId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("IndexModel.OnGetFinalizeAWXJobAsync: Falha ao deletar inventario temporario {InventoryId}.", tempInventoryId);
+                    }
+                }
+
                 HttpContext.Session.Remove("CurrentAWXJobId");
                 HttpContext.Session.Remove("CurrentAWXHostname");
                 HttpContext.Session.Remove("CurrentAWXTemplateName");
                 HttpContext.Session.Remove("CurrentAWXJobStartTime");
+                HttpContext.Session.Remove("CurrentAWXTempInventoryId");
 
-                return new JsonResult(new { success = true, message = "Job finalizado e auditoria salva." });
+                return new JsonResult(new { success = true, message = "Job finalizado, auditoria salva e inventario temporario deletado." });
             }
             catch (Exception ex)
             {
