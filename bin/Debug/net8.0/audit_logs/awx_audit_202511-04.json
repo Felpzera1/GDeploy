@@ -1,0 +1,29 @@
+[
+  {
+    "Timestamp": "2025-11-04 14:16:03",
+    "Username": "felipe.bornhausen@redetop.com.br",
+    "Hostname": "10.10.177.107",
+    "TemplateName": "Pingar Host",
+    "DeployType": "AWX",
+    "Success": false,
+    "Output": "-> Disparando Job Template 'Pingar Host' para '10.10.177.107'...\r\n\nERRO: Response status code does not indicate success: 400 (Bad Request).\r\n"
+  },
+  {
+    "Timestamp": "2025-11-04 14:16:22",
+    "Username": "felipe.bornhausen@redetop.com.br",
+    "Hostname": "10.10.177.107",
+    "TemplateName": "Pingar Host",
+    "DeployType": "AWX",
+    "Success": false,
+    "Output": "-> Disparando Job Template 'Pingar Host' para '10.10.177.107'...\r\n\nERRO: Response status code does not indicate success: 400 (Bad Request).\r\n"
+  },
+  {
+    "Timestamp": "2025-11-04 14:16:36",
+    "Username": "felipe.bornhausen@redetop.com.br",
+    "Hostname": "192.168.1.94",
+    "TemplateName": "Pingar Host",
+    "DeployType": "AWX",
+    "Success": false,
+    "Output": "-> Disparando Job Template 'Pingar Host' para '192.168.1.94'...\r\n\nERRO: Response status code does not indicate success: 400 (Bad Request).\r\n"
+  }
+]

@@ -88,7 +88,7 @@ namespace GtopPdqNet.Services
             }
         }
 
-        public async Task<int> LaunchJobTemplateAsync(string hostname, string templateName)
+                public async Task<int> LaunchJobTemplateAsync(string hostname, string templateName)
         {
             _logger.LogInformation("AWXService: Lançando Job Template '{Template}' para o host '{Host}'.", templateName, hostname);
             
@@ -102,10 +102,12 @@ namespace GtopPdqNet.Services
                 }
                 
                 // 2. Criar o payload para o POST
+                // O 'inventory' é obrigatório porque o Job Template tem "Prompt on launch" habilitado
                 // O 'limit' restringe a execução apenas ao host especificado
                 // O 'extra_vars' passa o hostname (ou qualquer outra variável) para o playbook
                 var payload = new 
                 {
+                    inventory = 5, // ID do inventário "Infraestrutura"
                     limit = hostname,
                     extra_vars = new { target_host = hostname }
                 };
@@ -114,7 +116,7 @@ namespace GtopPdqNet.Services
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
                 
                 // 3. Disparar o Job
-                var response = await _httpClient.PostAsync($"job_templates/{templateId}/launch/", content);
+                var response = await _httpClient.PostAsync($"job_templates/{templateId}/launch/", content );
                 
                 // 4. Log detalhado em caso de falha (para diagnóstico)
                 if (!response.IsSuccessStatusCode)
