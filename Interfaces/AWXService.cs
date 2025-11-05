@@ -314,7 +314,8 @@ namespace GtopPdqNet.Services
                 // Endpoint para deletar inventario: DELETE /api/v2/inventories/{id}/
                 var response = await _httpClient.DeleteAsync($"inventories/{inventoryId}/");
 
-                if (!response.IsSuccessStatusCode)
+                // Se o inventario ja foi deletado (404 Not Found), consideramos sucesso
+                if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.NotFound)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("AWX Delete Inventory Failed: Status {Status}. Response: {Response}", response.StatusCode, errorContent);
