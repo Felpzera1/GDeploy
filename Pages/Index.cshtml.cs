@@ -248,6 +248,7 @@ namespace GtopPdqNet.Pages
                 // --- CRIAR INVENTARIO AD-HOC ---
                 // Gerar um nome unico para o inventario temporario
                 string tempInventoryName = $"deploy_temp_{hostname}_{DateTime.Now:yyyyMMddHHmmss}";
+                logBuilder.AppendLine($"-> Tentando criar inventario ad-hoc: {tempInventoryName}");
                 int tempInventoryId = await _awxService.CreateTemporaryInventoryAsync(tempInventoryName, 1); // organizationId = 1 (padrao)
                 
                 if (tempInventoryId == 0)
@@ -262,7 +263,7 @@ namespace GtopPdqNet.Pages
                 _logger.LogInformation("IndexModel.OnPostLaunchAWXAsync: Inventario ad-hoc criado. ID: {InventoryId}", tempInventoryId);
 
                 // --- ADICIONAR HOST AO INVENTARIO ---
-                logBuilder.AppendLine($"-> Adicionando host \'{hostname}\' ao inventario...");
+                logBuilder.AppendLine($"-> Tentando adicionar host \'{hostname}\' ao inventario {tempInventoryId}...");
                 bool hostAdded = await _awxService.AddHostToInventoryAsync(tempInventoryId, hostname);
                 
                 if (!hostAdded)
