@@ -44,6 +44,12 @@
             AWX (Linux)
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-content" type="button" role="tab" aria-controls="audit-content" aria-selected="false">
+            <i class="bi bi-file-text" style="margin-right: 8px;"></i>
+            Auditoria
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content mt-3" id="deployTabsContent">
@@ -173,7 +179,199 @@ Aguardando novos logs do AWX...
             </div>
         </div>
     </div>
+
+    <!-- ABA AUDITORIA -->
+    <div class="tab-pane fade" id="audit-content" role="tabpanel" aria-labelledby="audit-tab">
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="modern-content-box">
+                    <div class="mb-4">
+                        <h5 class="mb-0">Historico de Deployments</h5>
+                        <small class="text-muted">Acompanhe todos os deployments realizados</small>
+                    </div>
+                    <hr />
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm" id="auditTable">
+                            <thead class="table-header-modern">
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Host</th>
+                                    <th>Pacote/Template</th>
+                                    <th>Status</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Carregando historico...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* ======================================== */
+    /* TEMA DE CORES MODERNO */
+    /* ======================================== */
+    :root {
+        --primary-color: #1e3a5f;
+        --primary-light: #2d5a8c;
+        --secondary-color: #2d3748;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --info-color: #3b82f6;
+        --border-color: #e5e7eb;
+        --text-muted: #6b7280;
+    }
+
+    /* Containers Modernos */
+    .dark-content-box,
+    .modern-content-box {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .dark-content-box:hover,
+    .modern-content-box:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Abas Modernas */
+    .nav-tabs {
+        border-bottom: 2px solid var(--border-color);
+        gap: 0;
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--text-muted);
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 12px 20px;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-light);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background-color: transparent;
+    }
+
+    /* Botoes Modernos */
+    .btn-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+    }
+
+    .btn-success:hover {
+        background-color: #059669;
+        border-color: #059669;
+    }
+
+    .btn-primary {
+        background-color: var(--info-color);
+        border-color: var(--info-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+
+    /* Tabela de Auditoria */
+    .table-header-modern {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .table-header-modern th {
+        border: none;
+        font-weight: 600;
+        padding: 12px 15px;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .table td {
+        padding: 12px 15px;
+        vertical-align: middle;
+    }
+
+    /* Status Badge */
+    .badge-success {
+        background-color: var(--success-color);
+        color: white;
+    }
+
+    .badge-danger {
+        background-color: var(--danger-color);
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: var(--warning-color);
+        color: white;
+    }
+
+    /* Inputs e Selects */
+    .form-control,
+    .form-select {
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 10px 12px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+    }
+
+    /* Alerts Modernos */
+    .alert {
+        border: none;
+        border-radius: 6px;
+    }
+
+    .alert-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .alert-warning {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .alert-info {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
