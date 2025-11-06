@@ -258,11 +258,11 @@ body.authenticated-area {
    ======================================== */
 
 :root {
-  /* Cores Shadcn/ui */
-  --shadcn-background: #ffffff;
-  --shadcn-foreground: #0f172a;
-  --shadcn-card: #ffffff;
-  --shadcn-card-foreground: #0f172a;
+  /* Cores Shadcn/ui - DARK MODE */
+  --shadcn-background: #020817; /* Fundo da página */
+  --shadcn-foreground: #f8fafc; /* Cor do texto */
+  --shadcn-card: #0f172a; /* Fundo dos containers */
+  --shadcn-card-foreground: #f8fafc; /* Cor do texto nos containers */
   --shadcn-primary: #10b981;
   --shadcn-primary-foreground: #ffffff;
   --shadcn-secondary: #64748b;
@@ -285,7 +285,7 @@ body.authenticated-area {
   border: 1px solid var(--shadcn-border);
   border-radius: 6px;
   padding: 24px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Sombra mais escura para dark mode */
   transition: all 0.3s ease;
 }
 
@@ -296,7 +296,7 @@ body.authenticated-area {
 /* Estilos Shadcn/ui - Inputs */
 .dark-content-box .form-control,
 .dark-content-box .form-select {
-  background-color: var(--shadcn-background);
+  background-color: var(--shadcn-background); /* Fundo do input escuro */
   color: var(--shadcn-foreground);
   border: 1px solid var(--shadcn-border);
   border-radius: 6px;
@@ -455,27 +455,27 @@ body.authenticated-area {
 }
 
 .alert-danger {
-  background-color: #fee2e2;
-  border-color: #fecaca;
-  color: #991b1b;
+  background-color: #450a0a; /* Darker background for dark mode */
+  border-color: #7f1d1d;
+  color: #fecaca;
 }
 
 .alert-warning {
-  background-color: #fef3c7;
-  border-color: #fde68a;
-  color: #92400e;
+  background-color: #451a03;
+  border-color: #78350f;
+  color: #fde68a;
 }
 
 .alert-info {
-  background-color: #dbeafe;
-  border-color: #bfdbfe;
-  color: #1e40af;
+  background-color: #075985;
+  border-color: #0369a1;
+  color: #bfdbfe;
 }
 
 .alert-success {
-  background-color: #dcfce7;
-  border-color: #bbf7d0;
-  color: #166534;
+  background-color: #064e3b;
+  border-color: #047857;
+  color: #bbf7d0;
 }
 
 /* Estilos Shadcn/ui - HR */
