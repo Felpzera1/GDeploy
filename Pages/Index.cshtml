@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Deploy PDQ";
@@ -30,24 +30,17 @@
     </div>
 </div>
 
-<!-- ABAS PARA PDQ E LINUX -->
+<!-- ABA ÚNICA PARA PDQ DEPLOY (WINDOWS) -->
 <ul class="nav nav-tabs mt-4" id="deployTabs" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="pdq-tab" data-bs-toggle="tab" data-bs-target="#pdq-content" type="button" role="tab" aria-controls="pdq-content" aria-selected="true">
-            <img src="~/images/Windows.png" alt="PDQ Deploy Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
+            <img src="~/images/windows.png" alt="PDQ Deploy Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
             PDQ Deploy (Windows)
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="linux-tab" data-bs-toggle="tab" data-bs-target="#linux-content" type="button" role="tab" aria-controls="linux-content" aria-selected="false">
-            <img src="~/images/awx.png" alt="AWX Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
-            AWX (Linux)
         </button>
     </li>
 </ul>
 
 <div class="tab-content mt-3" id="deployTabsContent">
-    <!-- ABA PDQ DEPLOY (WINDOWS) -->
     <div class="tab-pane fade show active" id="pdq-content" role="tabpanel" aria-labelledby="pdq-tab">
         <div class="row g-3">
             <div class="col-lg-5">
@@ -64,8 +57,8 @@
                         <div class="mb-3">
                             <label asp-for="Hostname" class="form-label"></label>
                             <input asp-for="Hostname" id="hostnameInput" class="form-control" 
-                                   placeholder="Ex.: CN001; TOP002; PDV003 (máx. 5 computadores)" />
-                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;). Apenas computadores com prefixos CN, TOP ou PDV são permitidos.</small>
+                                   placeholder="Ex.: CN001; TOP002; PDV003; RDS004 (máx. 5 computadores)" />
+                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;). Prefixos permitidos: CN, TOP, PDV ou RDS.</small>
                             <span asp-validation-for="Hostname" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
@@ -97,80 +90,17 @@
 
             <div class="col-lg-7">
                 <div class="dark-content-box h-100 d-flex flex-column">
-                    <div class="mb-4">
-                         <!-- <h1 class="display-6">Logs do Deploy</h1>
-                         <p>Acompanhe o status e os resultados.</p> -->
-                     </div>
-                    <!--<h6>Verificando disponibilidade</h6>
-                    <hr /> -->
-                     <div id="logOutputContainer" style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
+                    <div id="logOutputContainer" style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
                         <pre id="logOutput" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">Aguardando execução...</pre>
-                     </div>
-                     <div class="mt-4">
-                        <!-- <h6>Logs de Instalação</del></h6> -->
+                    </div>
+                    <div class="mt-4">
                         <div style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
-                            <pre id="logBox" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">
-Aguardando novos logs do PDQ Deploy...
-                            </pre>
+                            <pre id="logBox" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">Aguardando novos logs do PDQ Deploy...</pre>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- ABA AWX (LINUX) -->
-    <div class="tab-pane fade" id="linux-content" role="tabpanel" aria-labelledby="linux-tab">
-        <div class="row g-3">
-            <div class="col-lg-5">
-                <div class="dark-content-box h-100">
-                    <div class="mb-4 text-center"> 
-                        <h5>AWX - Automação Linux</h5>
-                    </div>
-                    <hr />
-                    <div id="awxErrorContainer" class="alert alert-danger mb-3" role="alert" style="display: none;"></div>
-                    <div id="awxWarningContainer" class="alert alert-warning mb-3" role="alert" style="display: none;"></div>
-
-                    <form id="awxForm">
-                        <div class="mb-3">
-                            <label for="awxHostname" class="form-label">IP - Linux</label>
-                            <input type="text" id="awxHostname" class="form-control" 
-                                   placeholder="Adicione o IP (máx. 5 computadores)" />
-                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;) Apenas Hosts cadastrados no AWX e com SSH habilitado irão funcionar.</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="awxJobTemplate" class="form-label">Pacotes</label>
-                            <select id="awxJobTemplate" class="form-select">
-                                <option value="">-- Carregando Job Templates --</option>
-                            </select>
-                        </div>
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="button" id="awxDeployButton" class="btn btn-primary btn-lg">
-                                <span id="awxDeployButtonText">Realizar Deploy</span>
-                                <span id="awxDeploySpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="col-lg-7">
-                <div class="dark-content-box h-100 d-flex flex-column">
-                    <div class="mb-4">
-                         <h6>Logs da Execução AWX</h6>
-                     </div>
-                    <div id="awxLogOutputContainer" style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
-                        <pre id="awxLogOutput" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">Aguardando execução...</pre>
-                    </div>
-                    <div class="mt-4">
-                        <div style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
-                            <pre id="awxJobStatusBox" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">
-Aguardando novos logs do AWX...
-                            </pre>
-                        </div>
-                    </div>
-                </div>
-            </div>
     </div>
 </div>
 
@@ -178,9 +108,6 @@ Aguardando novos logs do AWX...
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // ============================================
-        // LÓGICA PDQ DEPLOY (WINDOWS) - ORIGINAL
-        // ============================================
         document.addEventListener('DOMContentLoaded', function () {
             const deployButton = document.getElementById('deployButton');
             const deployButtonText = document.getElementById('deployButtonText');
@@ -211,9 +138,10 @@ Aguardando novos logs do AWX...
 
                 const invalidHostnames = hostnames.filter(h => !h.toUpperCase().startsWith('CN') && 
                                                               !h.toUpperCase().startsWith('TOP') && 
-                                                              !h.toUpperCase().startsWith('PDV'));
+                                                              !h.toUpperCase().startsWith('PDV') &&
+                                                              !h.toUpperCase().startsWith('RDS'));
                 if (invalidHostnames.length > 0) {
-                    alert(`Os seguintes computadores não têm prefixos válidos (CN, TOP, PDV): ${invalidHostnames.join(', ')}`);
+                    alert(`Os seguintes computadores não têm prefixos válidos (CN, TOP, PDV, RDS): ${invalidHostnames.join(', ')}`);
                     return;
                 }
 
@@ -309,278 +237,6 @@ Aguardando novos logs do AWX...
             function _getCurrentTime() {
                 return new Date().toLocaleTimeString('pt-BR');
             }
-
-            // ============================================
-            // LÓGICA AWX (LINUX) - NOVA
-            // ============================================
-            const awxDeployButton = document.getElementById('awxDeployButton');
-            const awxDeployButtonText = document.getElementById('awxDeployButtonText');
-            const awxHostnameInput = document.getElementById('awxHostname');
-            const awxJobTemplateSelect = document.getElementById('awxJobTemplate');
-            const awxLogOutput = document.getElementById('awxLogOutput');
-            const awxLogContainer = document.getElementById('awxLogOutputContainer');
-            const awxSpinner = document.getElementById('awxDeploySpinner');
-
-            // Carregar Job Templates ao iniciar
-            loadAWXJobTemplates();
-
-            function loadAWXJobTemplates() {
-                fetch('/Index?handler=GetAWXTemplates', {
-                    method: 'GET',
-                    headers: {
-                        'RequestVerificationToken': antiForgeryToken
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Erro ao carregar templates: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    awxJobTemplateSelect.innerHTML = '';
-                    if (data.templates && data.templates.length > 0) {
-                        data.templates.forEach(template => {
-                            const option = document.createElement('option');
-                            option.value = template;
-                            option.textContent = template;
-                            awxJobTemplateSelect.appendChild(option);
-                        });
-                    } else {
-                        const option = document.createElement('option');
-                        option.value = '';
-                        option.textContent = '-- Nenhum template disponível --';
-                        awxJobTemplateSelect.appendChild(option);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar templates AWX:', error);
-                    awxJobTemplateSelect.innerHTML = '<option value="">-- Erro ao carregar templates --</option>';
-                });
-            }
-
-            awxDeployButton.addEventListener('click', function () {
-                const hostnamesInput = awxHostnameInput.value.trim();
-                const selectedTemplate = awxJobTemplateSelect.value;
-
-                if (!hostnamesInput || !selectedTemplate) { 
-                    alert('Hostname e Job Template são obrigatórios.'); 
-                    return; 
-                }
-
-                const hostnames = hostnamesInput.split(';')
-                    .map(h => h.trim())
-                    .filter(h => h.length > 0);
-
-                if (hostnames.length > 5) {
-                    alert('Máximo de 5 computadores permitidos por vez.');
-                    return;
-                }
-
-                awxLogOutput.textContent = `[${_getCurrentTime()}] Iniciando automação AWX para ${hostnames.length} computador(es) com template '${selectedTemplate}'...\n`;
-                awxLogOutput.textContent += `Computadores: ${hostnames.join(', ')}\n`;
-                awxLogOutput.textContent += `---------------------------------------\n`;
-
-                awxLogContainer.style.borderColor = '#444';
-                _scrollToBottom(awxLogContainer);
-                awxDeployButton.disabled = true;
-                awxSpinner.style.display = 'inline-block';
-                awxDeployButtonText.textContent = 'Executando...';
-
-                processAWXHostnames(hostnames, selectedTemplate, 0, []);
-            });
-
-            function processAWXHostnames(hostnames, selectedTemplate, index, results) {
-                if (index >= hostnames.length) {
-                    const successCount = results.filter(r => r.success).length;
-                    const failCount = results.length - successCount;
-
-                    awxLogOutput.textContent += `\n[${_getCurrentTime()}] Processo concluído!\n`;
-                    awxLogOutput.textContent += `---------------------------------------\n`;
-                    awxLogOutput.textContent += `Total: ${results.length} | Sucesso: ${successCount} | Falha: ${failCount}\n`;
-                    awxLogOutput.textContent += `=======================================\n`;
-
-                    awxDeployButton.disabled = false;
-                    awxSpinner.style.display = 'none';
-                    awxDeployButtonText.textContent = 'Executar Automação';
-                    awxLogContainer.style.borderColor = failCount === 0 ? '#198754' : (successCount === 0 ? '#dc3545' : '#ffc107');
-
-                    return;
-                }
-
-                const hostname = hostnames[index];
-                awxLogOutput.textContent += `\n[${_getCurrentTime()}] Processando ${index + 1}/${hostnames.length}: '${hostname}'\n`;
-                _scrollToBottom(awxLogContainer);
-
-                const formData = new FormData();
-                formData.append('hostname', hostname);
-                formData.append('templateName', selectedTemplate);
-
-                fetch('/Index?handler=LaunchAWX', {
-                    method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': antiForgeryToken
-                    },
-                    body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            throw new Error(`Erro Servidor ${response.status}: ${text || 'Detalhe não disponível.'}`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    results.push({
-                        hostname: hostname,
-                        success: data.success,
-                        log: data.log || '[Sem log]',
-                        jobId: data.jobId
-                    });
-
-                    if (!data.success) {
-                        // Exibir erro visual na interface
-                        const awxErrorContainer = document.getElementById('awxErrorContainer');
-                        awxErrorContainer.textContent = data.log || `Erro desconhecido ao processar o host ${hostname}.`;
-                        awxErrorContainer.style.display = 'block';
-                    } else {
-                        // Limpar erro visual se for sucesso
-                        document.getElementById('awxErrorContainer').style.display = 'none';
-                    }
-
-                    _displayAWXLog(`COMPUTADOR: ${hostname}\nJob ID: ${data.jobId}\n${data.log || '[Sem log]'}`, data.success);
-                    _scrollToBottom(awxLogContainer);
-                    
-                    // Monitorar o status do job
-                    if (data.jobId) {
-                        monitorAWXJob(data.jobId, hostname);
-                    }
-                    
-                    processAWXHostnames(hostnames, selectedTemplate, index + 1, results);
-                })
-                .catch(error => {
-                    console.error('Erro AWX:', error);
-                    results.push({
-                        hostname: hostname,
-                        success: false,
-                        log: `ERRO Comunicação:\n${error.message}`,
-                        jobId: null
-                    });
-                    // Exibir erro de comunicação visual na interface
-                    const awxErrorContainer = document.getElementById('awxErrorContainer');
-                    awxErrorContainer.textContent = `ERRO DE COMUNICAÇÃO: ${error.message}`;
-                    awxErrorContainer.style.display = 'block';
-
-                    _displayAWXLog(`COMPUTADOR: ${hostname}\nERRO Comunicação:\n${error.message}`, false);
-                    _scrollToBottom(awxLogContainer);
-                    processAWXHostnames(hostnames, selectedTemplate, index + 1, results);
-                });
-            }
-
-            function monitorAWXJob(jobId, hostname) {
-                // Fazer polling do status do job a cada 2 segundos
-                const pollInterval = setInterval(() => {
-                    fetch(`/Index?handler=GetAWXJobStatus&jobId=${jobId}`, {
-                        method: 'GET',
-                        headers: {
-                            'RequestVerificationToken': antiForgeryToken
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error(`Erro ao obter status: ${response.status}`);
-                        return response.json();
-                    })
-                    .then(data => {
-                        const statusDisplay = document.getElementById('awxJobStatusBox');
-                        statusDisplay.textContent += `\n[${_getCurrentTime()}] [${hostname}] Status: ${data.status}\n`;
-                        statusDisplay.textContent += `${data.output}\n`;
-                        statusDisplay.scrollTop = statusDisplay.scrollHeight;
-
-                        // Se o job terminou, parar o polling
-                        if (data.status === 'successful' || data.status === 'failed' || data.status === 'error') {
-                            clearInterval(pollInterval);
-                            
-                            // Chamar o handler para finalizar o job, salvar auditoria e limpar a Session no backend
-                            fetch(`/Index?handler=FinalizeAWXJob&jobId=${jobId}&finalStatus=${data.status}&output=${encodeURIComponent(data.output)}`, {
-                                method: 'GET',
-                                headers: {
-                                    'RequestVerificationToken': antiForgeryToken
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(finalizeData => {
-                                if (finalizeData.success) {
-                                    console.log(`Job ${jobId} finalizado e Session limpa.`);
-                                    // Limpar o estado visual no frontend
-                                    awxDeployButton.disabled = false;
-                                    awxSpinner.style.display = 'none';
-                                    awxDeployButtonText.textContent = 'Executar Automação';
-                                } else {
-                                    console.error(`Erro ao finalizar Job ${jobId}:`, finalizeData.message);
-                                }
-                            })
-                            .catch(error => {
-                                console.error(`Erro de comunicação ao finalizar Job ${jobId}:`, error);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro ao monitorar job AWX:', error);
-                        clearInterval(pollInterval);
-                    });
-                }, 2000);
-            }
-
-            function _displayAWXLog(logText, success) {
-                awxLogOutput.textContent += `\n[${_getCurrentTime()}] Resposta Servidor:\n`;
-                awxLogOutput.textContent += `---------------------------------------\n`;
-                awxLogOutput.textContent += `${logText}\n`;
-                awxLogOutput.textContent += `---------------------------------------\n`;
-            }
-
-
-
-            if (persistedJobId !== null && persistedJobId > 0) {
-                // Mudar para a aba AWX
-                const awxTab = document.getElementById('linux-tab');
-                const awxContent = document.getElementById('linux-content');
-                
-                awxTab.classList.add('active');
-                awxTab.setAttribute('aria-selected', 'true');
-                awxContent.classList.add('active', 'show');
-
-                // Desativar o botão de deploy
-                awxDeployButton.disabled = true;
-                awxSpinner.style.display = 'inline-block';
-                awxDeployButtonText.textContent = 'Monitorando...';
-
-                // Exibir mensagem de recuperação
-                const awxLogOutput = document.getElementById('awxLogOutput');
-                awxLogOutput.textContent = `[${_getCurrentTime()}] Job AWX recuperado da sessão:\n`;
-                awxLogOutput.textContent += `Job ID: ${persistedJobId}\n`;
-                awxLogOutput.textContent += `Host: ${persistedHostname}\n`;
-                awxLogOutput.textContent += `Template: ${persistedTemplateName}\n`;
-                awxLogOutput.textContent += `Início: ${persistedStartTime}\n`;
-                awxLogOutput.textContent += `---------------------------------------\n`;
-                
-                // Iniciar o monitoramento
-                monitorAWXJob(persistedJobId, persistedHostname);
-            }
         });
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-    <script>
-        const connection = new signalR.HubConnectionBuilder( )
-            .withUrl("/loghub")
-            .build();
-
-        connection.on("ReceiveLog", (computer, step, content) => {
-            const logBox = document.getElementById("logBox");
-            const msg = `[${computer}] STEP ${step}\n${content}\n\n`;
-            logBox.textContent += msg;
-            logBox.scrollTop = logBox.scrollHeight;
-        });
-
-        connection.start().catch(err => console.error("Erro SignalR:", err.toString()));
     </script>
 }

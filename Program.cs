@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using GtopPdqNet.Services;
-using GtopPdqNet.Interfaces; // Adicionado para IAWXService
+using GtopPdqNet.Interfaces;
 using System.Net.Http; // Adicionado para AddHttpClient
 using System.Net.Sockets; 
 using System.Text; 
@@ -241,7 +241,7 @@ public class Program
         builder.Services.Configure<LdapSettings>(builder.Configuration.GetSection("LdapSettings"));
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddScoped<GtopPdqNet.Interfaces.IPowerShellService, GtopPdqNet.Services.PowerShellService>();
-        builder.Services.AddHttpClient<IAWXService, GtopPdqNet.Services.AWXService>(); // ADICIONADO: Registro do IAWXService com HttpClient
+
         builder.Services.AddScoped<GtopPdqNet.Services.AuditService>();
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();

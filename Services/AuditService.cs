@@ -65,7 +65,6 @@ namespace GtopPdqNet.Services
 
                 List<object> logs;
 
-                // Ler logs existentes ou criar nova lista
                 if (File.Exists(filePath))
                 {
                     var existingContent = await File.ReadAllTextAsync(filePath);
@@ -73,23 +72,18 @@ namespace GtopPdqNet.Services
                     {
                         try
                         {
-                            // Tentar parsear como array primeiro
                             logs = JsonSerializer.Deserialize<List<object>>(existingContent) ?? new List<object>();
                         }
                         catch (JsonException)
                         {
-                            // Se falhar, pode ser um objeto único - tentar converter
                             try
                             {
                                 var singleLog = JsonSerializer.Deserialize<object>(existingContent);
                                 logs = new List<object> { singleLog };
-                                _logger.LogWarning("Arquivo de log {FileName} continha objeto único, convertido para array", fileName);
                             }
                             catch (JsonException)
                             {
-                                // Se ainda falhar, criar nova lista
                                 logs = new List<object>();
-                                _logger.LogWarning("Arquivo de log {FileName} com formato inválido, criando nova lista", fileName);
                             }
                         }
                     }
@@ -103,10 +97,8 @@ namespace GtopPdqNet.Services
                     logs = new List<object>();
                 }
 
-                // Adicionar novo log
                 logs.Add(logEntry);
 
-                // Salvar como JSON array válido
                 var jsonContent = JsonSerializer.Serialize(logs, new JsonSerializerOptions 
                 { 
                     WriteIndented = true,
@@ -114,7 +106,6 @@ namespace GtopPdqNet.Services
                 });
 
                 await File.WriteAllTextAsync(filePath, jsonContent);
-                _logger.LogInformation("Log de auditoria salvo em array JSON: {FileName} (total: {Count} logs)", fileName, logs.Count);
             }
             catch (Exception ex)
             {
@@ -129,7 +120,6 @@ namespace GtopPdqNet.Services
                 var timestamp = DateTime.Now;
                 var timestampStr = timestamp.ToString("yyyyMMdd_HHmmss");
                 
-                // Extrair informações do logEntry
                 var logJson = JsonSerializer.Serialize(logEntry);
                 var logData = JsonSerializer.Deserialize<JsonElement>(logJson);
                 
@@ -162,8 +152,7 @@ namespace GtopPdqNet.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao salvar log detalhado para deploy de {Username}", 
-                    JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(logEntry)).GetProperty("Username").GetString());
+                _logger.LogError(ex, "Erro ao salvar log detalhado");
             }
         }
 
@@ -172,17 +161,9 @@ namespace GtopPdqNet.Services
             try
             {
                 var allLogs = new List<object>();
-                
-                // Buscar arquivos de log do PDQ Deploy
                 var pdqFiles = Directory.GetFiles(_auditLogPath, "deploy_audit_*.json");
-                
-                // Buscar arquivos de log do AWX
-                var awxFiles = Directory.GetFiles(_auditLogPath, "awx_audit_*.json");
-                
-                // Combinar ambos os arrays de arquivos
-                var allFiles = pdqFiles.Concat(awxFiles).ToArray();
 
-                foreach (var file in allFiles)
+                foreach (var file in pdqFiles)
                 {
                     try
                     {
@@ -199,11 +180,9 @@ namespace GtopPdqNet.Services
                     catch (JsonException ex)
                     {
                         _logger.LogWarning(ex, "Erro ao processar arquivo de log: {FileName}", file);
-                        // Continuar processando outros arquivos
                     }
                 }
 
-                // Ordenar por timestamp (mais recente primeiro)
                 allLogs = allLogs.OrderByDescending(log => 
                 {
                     if (log is JsonElement element && element.TryGetProperty("Timestamp", out var timestampProp))
@@ -216,7 +195,6 @@ namespace GtopPdqNet.Services
                     return DateTime.MinValue;
                 }).ToList();
 
-                // Retornar como JSON válido
                 return JsonSerializer.Serialize(allLogs, new JsonSerializerOptions 
                 { 
                     WriteIndented = true,
@@ -226,7 +204,7 @@ namespace GtopPdqNet.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao recuperar logs de auditoria");
-                return "[]"; // Retornar array vazio em caso de erro
+                return "[]";
             }
         }
 
@@ -234,7 +212,6 @@ namespace GtopPdqNet.Services
         {
             try
             {
-                // Tentar encontrar o arquivo de log detalhado
                 var searchPattern = $"*_{hostname}_{username.Replace("@", "_").Replace(".", "_")}.json";
                 var files = Directory.GetFiles(_detailedLogPath, searchPattern);
 
@@ -256,149 +233,6 @@ namespace GtopPdqNet.Services
             {
                 _logger.LogError(ex, "Erro ao recuperar log detalhado");
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Salva logs de deploy do AWX (Linux) na auditoria, seguindo o mesmo padrão do PDQ Deploy.
-        /// </summary>
-        public async Task LogAWXDeployAsync(string username, string hostname, string templateName, bool success, string output)
-        {
-            try
-            {
-                var logEntry = new
-                {
-                    Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    Username = username,
-                    Hostname = hostname,
-                    TemplateName = templateName,
-                    DeployType = "AWX",
-                    Success = success,
-                    Output = output
-                };
-
-                // Salvar log de auditoria principal
-                await SaveAWXAuditLogAsync(logEntry);
-
-                // Salvar log detalhado
-                await SaveAWXDetailedLogAsync(logEntry, output);
-
-                _logger.LogInformation("Log de auditoria AWX salvo: {Username} executou deploy do template {TemplateName} em {Hostname} - Sucesso: {Success}", 
-                    username, templateName, hostname, success);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao salvar log de auditoria AWX para deploy de {Username}", username);
-            }
-        }
-
-        private async Task SaveAWXAuditLogAsync(object logEntry)
-        {
-            try
-            {
-                var today = DateTime.Now.ToString("yyyyMM-dd");
-                var fileName = $"awx_audit_{today}.json";
-                var filePath = Path.Combine(_auditLogPath, fileName);
-
-                List<object> logs;
-
-                // Ler logs existentes ou criar nova lista
-                if (File.Exists(filePath))
-                {
-                    var existingContent = await File.ReadAllTextAsync(filePath);
-                    if (!string.IsNullOrWhiteSpace(existingContent))
-                    {
-                        try
-                        {
-                            logs = JsonSerializer.Deserialize<List<object>>(existingContent) ?? new List<object>();
-                        }
-                        catch (JsonException)
-                        {
-                            try
-                            {
-                                var singleLog = JsonSerializer.Deserialize<object>(existingContent);
-                                logs = new List<object> { singleLog };
-                                _logger.LogWarning("Arquivo de log {FileName} continha objeto único, convertido para array", fileName);
-                            }
-                            catch (JsonException)
-                            {
-                                logs = new List<object>();
-                                _logger.LogWarning("Arquivo de log {FileName} com formato inválido, criando nova lista", fileName);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        logs = new List<object>();
-                    }
-                }
-                else
-                {
-                    logs = new List<object>();
-                }
-
-                // Adicionar novo log
-                logs.Add(logEntry);
-
-                // Salvar como JSON array válido
-                var jsonContent = JsonSerializer.Serialize(logs, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
-
-                await File.WriteAllTextAsync(filePath, jsonContent);
-                _logger.LogInformation("Log de auditoria AWX salvo em array JSON: {FileName} (total: {Count} logs)", fileName, logs.Count);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao salvar log de auditoria AWX principal");
-            }
-        }
-
-        private async Task SaveAWXDetailedLogAsync(object logEntry, string detailedOutput)
-        {
-            try
-            {
-                var timestamp = DateTime.Now;
-                var timestampStr = timestamp.ToString("yyyyMMdd_HHmmss");
-                
-                // Extrair informações do logEntry
-                var logJson = JsonSerializer.Serialize(logEntry);
-                var logData = JsonSerializer.Deserialize<JsonElement>(logJson);
-                
-                var hostname = logData.GetProperty("Hostname").GetString();
-                var username = logData.GetProperty("Username").GetString()?.Replace("@", "_").Replace(".", "_");
-                var templateName = logData.GetProperty("TemplateName").GetString()?.Replace(" ", "_");
-                
-                var fileName = $"awx_detailed_{timestampStr}_{hostname}_{templateName}_{username}.json";
-                var filePath = Path.Combine(_detailedLogPath, fileName);
-
-                var detailedLog = new
-                {
-                    Timestamp = logData.GetProperty("Timestamp").GetString(),
-                    Username = logData.GetProperty("Username").GetString(),
-                    Hostname = logData.GetProperty("Hostname").GetString(),
-                    TemplateName = logData.GetProperty("TemplateName").GetString(),
-                    DeployType = logData.GetProperty("DeployType").GetString(),
-                    Success = logData.GetProperty("Success").GetBoolean(),
-                    Output = logData.GetProperty("Output").GetString(),
-                    DetailedOutput = detailedOutput,
-                    LogFile = fileName,
-                    CreatedAt = timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                };
-
-                var jsonContent = JsonSerializer.Serialize(detailedLog, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
-
-                await File.WriteAllTextAsync(filePath, jsonContent);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao salvar log detalhado AWX para deploy");
             }
         }
     }
