@@ -6,96 +6,107 @@
 
 @Html.AntiForgeryToken()
 
-@if (!string.IsNullOrEmpty(Model.StatusMessagePackages))
-{
-    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
-        @Model.StatusMessagePackages
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+<div class="container-fluid py-4">
+    @if (!string.IsNullOrEmpty(Model.StatusMessagePackages))
+    {
+        <div class="alert alert-info alert-dismissible fade show mb-4 border-0 shadow-sm" role="alert" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-radius: 12px;">
+            <i class="fas fa-info-circle me-2"></i> @Model.StatusMessagePackages
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
-    <div>
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-        }
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-white m-0"><i class="fas fa-rocket me-2 text-primary"></i> GDeploy <span class="badge bg-primary fs-6 ms-2">v4.0</span></h2>
+        <div>
+            <form method="post" asp-page-handler="RefreshPackages" class="d-inline">
+                <button type="submit" class="btn btn-outline-info btn-sm px-3 shadow-sm">
+                    <i class="fas fa-sync-alt me-2"></i> Atualizar Pacotes
+                </button>
+            </form>
+        </div>
     </div>
-    <div>
-        <form method="post" asp-page-handler="RefreshPackages" style="display: inline-block; margin-right: 10px;">
-            <button type="submit" class="btn btn-sm btn-outline-info">Atualizar Pacotes</button>
-        </form>
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-        }
-    </div>
-</div>
 
-<!-- ABA ÚNICA PARA PDQ DEPLOY (WINDOWS) -->
-<ul class="nav nav-tabs mt-4" id="deployTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="pdq-tab" data-bs-toggle="tab" data-bs-target="#pdq-content" type="button" role="tab" aria-controls="pdq-content" aria-selected="true">
-            <img src="~/images/windows.png" alt="PDQ Deploy Logo" style="height: 24px; margin-right: 8px; vertical-align: middle;" />
-            PDQ Deploy (Windows)
-        </button>
-    </li>
-</ul>
+    <!-- ABA ÚNICA PARA PDQ DEPLOY (WINDOWS) -->
+    <ul class="nav nav-tabs mb-4 border-0" id="deployTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-semibold" id="pdq-tab" data-bs-toggle="tab" data-bs-target="#pdq-content" type="button" role="tab" aria-controls="pdq-content" aria-selected="true">
+                <i class="fab fa-windows me-2"></i> PDQ Deploy (Windows)
+            </button>
+        </li>
+    </ul>
 
-<div class="tab-content mt-3" id="deployTabsContent">
-    <div class="tab-pane fade show active" id="pdq-content" role="tabpanel" aria-labelledby="pdq-tab">
-        <div class="row g-3">
-            <div class="col-lg-5">
-                <div class="dark-content-box h-100">
-                    <div class="mb-4 text-center"> 
-                        <img src="~/images/Logotipo_Gtop_Azul.png" alt="Logo PDQ" style="height: 60px; margin-right: 15px; vertical-align: middle;" />
+    <div class="tab-content" id="deployTabsContent">
+        <div class="tab-pane fade show active" id="pdq-content" role="tabpanel" aria-labelledby="pdq-tab">
+            <div class="row g-4">
+                <!-- COLUNA DE FORMULÁRIO -->
+                <div class="col-lg-5">
+                    <div class="dark-content-box h-100">
+                        <div class="text-center mb-4"> 
+                            <img src="~/images/Logotipo_Gtop_Azul.png" alt="Logo PDQ" style="height: 50px; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.2));" />
+                            <p class="text-muted mt-3 small">Gerencie deploys com eficiência e segurança</p>
+                        </div>
+                        <hr class="opacity-10" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small" role="alert"></div>
+                        @if (ViewData["ErrorMessage"] != null) { <div class="alert alert-danger py-2 border-0 small" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-radius: 8px;">@ViewData["ErrorMessage"]</div> }
+
+                        <form id="deployForm" method="post" class="mt-4">
+                            <div class="mb-4">
+                                <label asp-for="Hostname" class="form-label small text-uppercase tracking-wider">Computadores de Destino</label>
+                                <input asp-for="Hostname" id="hostnameInput" class="form-control" 
+                                       placeholder="Ex.: CN001; TOP002; PDV003; RDS004" />
+                                <div class="form-text text-muted x-small mt-2">
+                                    <i class="fas fa-info-circle me-1"></i> Use ponto e vírgula (;) para múltiplos hosts (máx. 5).
+                                </div>
+                                <span asp-validation-for="Hostname" class="text-danger x-small"></span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="SelectedPackage" class="form-label small text-uppercase tracking-wider">Pacote de Instalação</label>
+                                @if (Model.PackageOptions != null && Model.PackageOptions.Any())
+                                {
+                                    <select asp-for="SelectedPackage" id="packageSelect" class="form-select" asp-items="Model.PackageOptions">
+                                        <option value="">-- Selecione um Pacote --</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <select id="packageSelect" class="form-select" disabled>
+                                         <option value="">@((Model.PackageOptions == null) ? "Erro ao carregar" : "Nenhum pacote")</option>
+                                     </select>
+                                     <small class="text-warning x-small">Lista de pacotes indisponível.</small>
+                                }
+                                <span asp-validation-for="SelectedPackage" class="text-danger x-small"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-5">
+                                <button type="button" id="deployButton" class="btn btn-success btn-lg py-3">
+                                    <span id="deployButtonText">INICIAR DEPLOY</span>
+                                    <span id="deploySpinner" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="display: none;"></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <hr />
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
-                    @if (ViewData["ErrorMessage"] != null) { <div class="alert alert-danger mb-3" role="alert">@ViewData["ErrorMessage"]</div> }
-                    @if (ViewData["WarningMessage"] != null) { <div class="alert alert-warning mb-3" role="alert">@ViewData["WarningMessage"]</div> }
-
-                    <form id="deployForm" method="post">
-                        <div class="mb-3">
-                            <label asp-for="Hostname" class="form-label"></label>
-                            <input asp-for="Hostname" id="hostnameInput" class="form-control" 
-                                   placeholder="Ex.: CN001; TOP002; PDV003; RDS004 (máx. 5 computadores)" />
-                            <small class="form-text text-muted">Separe múltiplos computadores com ponto e vírgula (;). Prefixos permitidos: CN, TOP, PDV ou RDS.</small>
-                            <span asp-validation-for="Hostname" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="SelectedPackage" class="form-label"></label>
-                            @if (Model.PackageOptions != null && Model.PackageOptions.Any())
-                            {
-                                <select asp-for="SelectedPackage" id="packageSelect" class="form-select" asp-items="Model.PackageOptions">
-                                    <option value="">-- Selecione um Pacote --</option>
-                                </select>
-                            }
-                            else
-                            {
-                                <select id="packageSelect" class="form-select" disabled>
-                                     <option value="">@((Model.PackageOptions == null) ? "Erro ao carregar" : "Nenhum pacote")</option>
-                                 </select>
-                                 <small class="text-warning">Lista de pacotes indisponível.</small>
-                            }
-                            <span asp-validation-for="SelectedPackage" class="text-danger"></span>
-                        </div>
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="button" id="deployButton" class="btn btn-success btn-lg">
-                                <span id="deployButtonText">Realizar Deploy</span>
-                                <span id="deploySpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                            </button>
-                        </div>
-                    </form>
                 </div>
-            </div>
 
-            <div class="col-lg-7">
-                <div class="dark-content-box h-100 d-flex flex-column">
-                    <div id="logOutputContainer" style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
-                        <pre id="logOutput" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">Aguardando execução...</pre>
-                    </div>
-                    <div class="mt-4">
-                        <div style="height: 250px; overflow-y: auto; background-color: #111; border: 1px solid #444; padding: 15px; border-radius: 4px;">
-                            <pre id="logBox" style="white-space: pre-wrap; word-wrap: break-word; margin: 0; color: #ccc; font-family: Consolas, 'Courier New', monospace; font-size: 0.85em;">Aguardando novos logs do PDQ Deploy...</pre>
+                <!-- COLUNA DE LOGS -->
+                <div class="col-lg-7">
+                    <div class="dark-content-box h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase tracking-wider m-0 small fw-bold text-primary">Monitor de Execução</h6>
+                            <span class="badge rounded-pill bg-dark border border-secondary text-muted x-small">Live Feed</span>
+                        </div>
+                        
+                        <div id="logOutputContainer" class="terminal-box flex-grow-1 mb-4" style="height: 250px; overflow-y: auto;">
+                            <pre id="logOutput" class="m-0">Aguardando comando...</pre>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase tracking-wider m-0 small fw-bold text-primary">Saída Detalhada do PDQ</h6>
+                        </div>
+
+                        <div id="logBoxContainer" class="terminal-box" style="height: 250px; overflow-y: auto;">
+                            <pre id="logBox" class="m-0">Aguardando novos logs do PDQ Deploy...</pre>
                         </div>
                     </div>
                 </div>
@@ -103,6 +114,17 @@
         </div>
     </div>
 </div>
+
+<style>
+    .tracking-wider { letter-spacing: 0.05em; }
+    .x-small { font-size: 0.75rem; }
+    .terminal-box {
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) transparent;
+    }
+    .terminal-box::-webkit-scrollbar { width: 6px; }
+    .terminal-box::-webkit-scrollbar-thumb { background-color: var(--primary); border-radius: 10px; }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
@@ -145,15 +167,16 @@
                     return;
                 }
 
-                logOutput.textContent = `[${_getCurrentTime()}] Iniciando deploy para ${hostnames.length} computador(es) com pacote '${selectedPackage}'...\n`;
-                logOutput.textContent += `Computadores: ${hostnames.join(', ')}\n`;
-                logOutput.textContent += `---------------------------------------\n`;
+                logOutput.textContent = `[${_getCurrentTime()}] > INICIANDO DEPLOY PARA ${hostnames.length} HOSTS\n`;
+                logOutput.textContent += `[${_getCurrentTime()}] > PACOTE: ${selectedPackage}\n`;
+                logOutput.textContent += `[${_getCurrentTime()}] > HOSTS: ${hostnames.join(', ')}\n`;
+                logOutput.textContent += `------------------------------------------------------------\n`;
 
-                logContainer.style.borderColor = '#444';
+                logContainer.style.borderColor = 'rgba(16, 185, 129, 0.5)';
                 _scrollToBottom(logContainer);
                 deployButton.disabled = true;
                 spinner.style.display = 'inline-block';
-                deployButtonText.textContent = 'Executando...';
+                deployButtonText.textContent = 'PROCESSANDO...';
 
                 processHostnames(hostnames, selectedPackage, 0, []);
             });
@@ -163,21 +186,20 @@
                     const successCount = results.filter(r => r.success).length;
                     const failCount = results.length - successCount;
 
-                    logOutput.textContent += `\n[${_getCurrentTime()}] Processo concluído!\n`;
-                    logOutput.textContent += `---------------------------------------\n`;
-                    logOutput.textContent += `Total: ${results.length} | Sucesso: ${successCount} | Falha: ${failCount}\n`;
-                    logOutput.textContent += `=======================================\n`;
+                    logOutput.textContent += `\n[${_getCurrentTime()}] > PROCESSO FINALIZADO\n`;
+                    logOutput.textContent += `[${_getCurrentTime()}] > SUCESSO: ${successCount} | FALHA: ${failCount}\n`;
+                    logOutput.textContent += `============================================================\n`;
 
                     deployButton.disabled = false;
                     spinner.style.display = 'none';
-                    deployButtonText.textContent = 'Realizar Deploy';
-                    logContainer.style.borderColor = failCount === 0 ? '#198754' : (successCount === 0 ? '#dc3545' : '#ffc107');
+                    deployButtonText.textContent = 'INICIAR DEPLOY';
+                    logContainer.style.borderColor = failCount === 0 ? 'rgba(16, 185, 129, 0.5)' : (successCount === 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(245, 158, 11, 0.5)');
 
                     return;
                 }
 
                 const hostname = hostnames[index];
-                logOutput.textContent += `\n[${_getCurrentTime()}] Processando ${index + 1}/${hostnames.length}: '${hostname}'\n`;
+                logOutput.textContent += `\n[${_getCurrentTime()}] > EXECUTANDO EM ${index + 1}/${hostnames.length}: '${hostname}'\n`;
                 _scrollToBottom(logContainer);
 
                 const formData = new FormData();
@@ -206,7 +228,7 @@
                         log: data.log || '[Sem log]'
                     });
 
-                    _displayLog(`COMPUTADOR: ${hostname}\n${data.log || '[Sem log]'}`, data.success);
+                    _displayLog(`HOST: ${hostname}\n${data.log || '[Sem log]'}`, data.success);
                     _scrollToBottom(logContainer);
                     processHostnames(hostnames, selectedPackage, index + 1, results);
                 })
@@ -217,17 +239,17 @@
                         success: false,
                         log: `ERRO Comunicação:\n${error.message}`
                     });
-                    _displayLog(`COMPUTADOR: ${hostname}\nERRO Comunicação:\n${error.message}`, false);
+                    _displayLog(`HOST: ${hostname}\nERRO Comunicação:\n${error.message}`, false);
                     _scrollToBottom(logContainer);
                     processHostnames(hostnames, selectedPackage, index + 1, results);
                 });
             }
 
             function _displayLog(logText, success) {
-                logOutput.textContent += `\n[${_getCurrentTime()}] Resposta Servidor:\n`;
-                logOutput.textContent += `---------------------------------------\n`;
+                logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA DO SERVIDOR:\n`;
+                logOutput.textContent += `------------------------------------------------------------\n`;
                 logOutput.textContent += `${logText}\n`;
-                logOutput.textContent += `---------------------------------------\n`;
+                logOutput.textContent += `------------------------------------------------------------\n`;
             }
 
             function _scrollToBottom(element) {

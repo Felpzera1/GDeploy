@@ -1,514 +1,194 @@
-/* site.css - Estilos Personalizados v3 */
+/* site.css - Estilos Modernos v4 - GDeploy */
 
-/* Layout base para o body */
+:root {
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --bg-dark: #020817;
+  --card-bg: rgba(15, 23, 42, 0.8);
+  --glass-bg: rgba(30, 41, 59, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa;
-  color: #212529;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Estilo para o main content */
-main {
-  flex-grow: 1;
+/* Background Estilizado */
+body.authenticated-area {
+  background-image: linear-gradient(rgba(2, 8, 23, 0.8), rgba(2, 8, 23, 0.8)), url('../images/tech_background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
-
-/* --- Layout Específico para a Página de Login --- */
+/* --- Layout de Login --- */
 .login-page-container {
   min-height: 100vh;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
   width: 100%;
-  margin: 0;
-  padding: 0;
 }
 
 .login-sidebar {
-  flex: 0 0 350px;
-  min-width: 300px;
-  background-color: #212529;
-  color: #f8f9fa;
+  flex: 0 0 400px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 30px;
+  padding: 40px;
+  z-index: 10;
 }
 
-/* --- CORREÇÃO AQUI: Regra Principal para o Background da Direita --- */
 .login-main-background {
-  flex-grow: 1; /* Ocupa o espaço restante */
-
-  /* Define a IMAGEM como fundo padrão */
-  background-image: url('../images/background_gtop.JPG'); /* <= Use caminho absoluto e verifique nome */
+  flex-grow: 1;
+  background-image: url('../images/tech_background.jpg');
   background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-
-  /* Estilos adicionais (se precisar de conteúdo sobre a imagem) */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white; /* Para texto sobreposto, se houver */
+  background-position: center;
 }
 
-
-/* Para telas menores, ajusta a sidebar e esconde o fundo da imagem */
-@media (max-width: 767.98px) {
-  .login-sidebar {
-      flex: 0 0 100%;
-      min-width: auto;
-      height: auto;
-      justify-content: flex-start;
-  }
-  .login-main-background {
-      display: none; /* Esconde a div inteira com a imagem em telas pequenas */
-  }
-}
-/* --- FIM DA CORREÇÃO DO BACKGROUND --- */
-
-
-.login-form-box {
-   width: 100%;
-   max-width: 300px;
-   margin: auto;
+@media (max-width: 768px) {
+  .login-sidebar { flex: 0 0 100%; }
+  .login-main-background { display: none; }
 }
 
-/* Estilos dos inputs e botões do login (sem alterações) */
-.login-form-box .form-control {
-  background-color: #343a40;
-  color: #f8f9fa;
-  border-color: #495057;
-}
-.login-form-box .form-control::placeholder {
-  color: #ced4da;
-  opacity: 1;
-}
-.login-form-box .form-control:focus {
-  background-color: #343a40;
-  color: #f8f9fa;
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-}
-.login-form-box .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
-}
-.login-form-box .btn-primary:hover {
-   background-color: #0056b3;
-   border-color: #004085;
-}
-.login-form-box a {
-  color: #ced4da;
-  text-decoration: none;
-}
-.login-form-box a:hover {
-   color: #f8f9fa;
-   text-decoration: underline;
-}
-
-
-/* --- Estilo Reutilizável para Caixas de Conteúdo Escuras (sem alterações) --- */
+/* --- Containers Glassmorphism --- */
 .dark-content-box {
-  background-color: #212529;
-  color: #f8f9fa;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
   padding: 30px;
-  border-radius: 8px;
-}
-.dark-content-box .form-control,
-.dark-content-box .form-select {
-   background-color: #343a40;
-   color: #f8f9fa;
-   border-color: #495057;
-}
-.dark-content-box .form-control::placeholder {
-   color: #ced4da;
-   opacity: 1;
-}
-.dark-content-box .form-control:focus,
-.dark-content-box .form-select:focus {
-   background-color: #343a40;
-   color: #f8f9fa;
-   border-color: #007bff;
-   box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-}
-.dark-content-box hr {
-  border-top-color: #495057;
-}
-
-/* --- Estilos para o Footer (sem alterações) --- */
-.footer {
-  width: 100%;
-  text-align: center;
-  padding: 15px 0;
-  margin-top: auto;
-  background-color: #f8f9fa;
-  color: #212529;
-  flex-shrink: 0;
-}
-
-/* NOVOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO */
-
-/* === ESTILOS PARA ÁREA AUTENTICADA (PÁGINA INDEX PÓS-LOGIN) === */
-
-/* 
-  Para aplicar um fundo escuro geral à página Index e outras páginas autenticadas,
-  você precisará modificar o _Layout.cshtml que essas páginas usam.
-  Encontre o _Layout.cshtml para usuários logados (geralmente em Pages/Shared/_Layout.cshtml,
-  mas pode ser outro se você tiver múltiplos layouts) e adicione uma classe ao <body>,
-  por exemplo: <body class="authenticated-area">
-*/
-body.authenticated-area {
-  background-color: #1c1c1e; /* Um cinza bem escuro, quase preto. Pode ser #212529 para combinar com .dark-content-box */
-  color: #f8f9fa;           /* Cor de texto padrão clara para bom contraste */
-}
-
-/* 
-  Estilizando o cabeçalho/navbar para o tema escuro.
-  Se seu cabeçalho no _Layout.cshtml for uma navbar do Bootstrap, como por exemplo:
-  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-  Você pode mudar para:
-  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
-  Isso já aplicará muitos estilos escuros do Bootstrap.
-
-  Se precisar de mais personalização ou se não for Bootstrap, use uma classe como abaixo
-  e adicione essa classe à tag <nav> no seu _Layout.cshtml: <nav class="authenticated-header ...">
-*/
-.authenticated-header .navbar-brand,
-.authenticated-header .nav-link {
-  color: #f8f9fa !important; /* Garante que os links do cabeçalho fiquem claros */
-}
-
-.authenticated-header .nav-link:hover {
-  color: #007bff !important; /* Um azul para o hover, como na sua tela de login */
-}
-
-/* 
-  A classe .dark-content-box que você já usa está boa.
-  Apenas para garantir que todo o texto dentro dela seja claro:
-*/
-.dark-content-box h1,
-.dark-content-box h2,
-.dark-content-box h3,
-.dark-content-box h4,
-.dark-content-box h5,
-.dark-content-box h6,
-.dark-content-box p,
-.dark-content-box label {
-  color: #f8f9fa; /* Garante que o texto seja claro */
-}
-
-/* 
-  Estilizando os botões "Atualizar Lista de Pacotes" e "Sair" para melhor visibilidade.
-  Você usou btn-outline-secondary e btn-outline-danger.
-  Para um tema escuro, btn-outline-light pode ser uma boa alternativa, ou um azul.
-*/
-
-/* Exemplo para o botão de Atualizar Pacotes, se quiser um azul similar ao do login */
-.btn-update-packages {
-  background-color: #007bff;
-  border-color: #007bff;
-  color: white;
-}
-.btn-update-packages:hover {
-  background-color: #0056b3;
-  border-color: #004085;
-  color: white;
-}
-
-/* Se quiser que o botão Sair (outline-danger) tenha texto mais claro no hover */
-.btn-outline-danger:hover {
-    color: white; /* Texto branco no hover para botões outline em fundo escuro */
-}
-
-
-/* 
-  Estilizando o rodapé para o tema escuro.
-  Seu rodapé atual no site.css tem fundo claro.
-  Adicione uma classe ao seu footer no _Layout.cshtml, por exemplo: <footer class="footer authenticated-footer ...">
-*/
-.footer.authenticated-footer {
-  background-color: #212529; /* Fundo escuro para o rodapé */
-  color: #adb5bd;           /* Cor de texto suave para o rodapé */
-  border-top: 1px solid #343a40; /* Uma borda sutil no topo */
-}
-
-.footer.authenticated-footer a {
-  color: #007bff; /* Links em azul no rodapé */
-}
-
-.footer.authenticated-footer a:hover {
-  color: #0056b3;
-}
-
-/* Ajuste para a cor do texto do nome do usuário logado, se necessário */
-/* No Index.cshtml, você tem: <span class="text-muted">Usuário: @User.Identity.Name</span> */
-/* A classe text-muted do Bootstrap pode ficar um pouco escura demais em um fundo muito escuro. */
-/* Você pode remover text-muted ou criar uma classe específica: */
-.user-identity-text {
-    color: #adb5bd; /* Ou #f8f9fa para mais destaque */
-}
-
-
-
-/* ========================================
-   TEMA SHADCN/UI ADAPTADO
-   ======================================== */
-
-:root {
-  /* Cores Shadcn/ui - DARK MODE */
-  --shadcn-background: #020817; /* Fundo da página */
-  --shadcn-foreground: #f8fafc; /* Cor do texto */
-  --shadcn-card: #0f172a; /* Fundo dos containers */
-  --shadcn-card-foreground: #f8fafc; /* Cor do texto nos containers */
-  --shadcn-primary: #10b981;
-  --shadcn-primary-foreground: #ffffff;
-  --shadcn-secondary: #64748b;
-  --shadcn-secondary-foreground: #ffffff;
-  --shadcn-muted: #f1f5f9;
-  --shadcn-muted-foreground: #64748b;
-  --shadcn-accent: #3b82f6;
-  --shadcn-accent-foreground: #ffffff;
-  --shadcn-destructive: #ef4444;
-  --shadcn-destructive-foreground: #ffffff;
-  --shadcn-border: #e2e8f0;
-  --shadcn-input: #e2e8f0;
-  --shadcn-ring: #10b981;
-}
-
-/* Estilos Shadcn/ui - Containers */
-.dark-content-box {
-  background-color: var(--shadcn-card);
-  color: var(--shadcn-card-foreground);
-  border: 1px solid var(--shadcn-border);
-  border-radius: 6px;
-  padding: 24px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Sombra mais escura para dark mode */
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dark-content-box:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
-/* Estilos Shadcn/ui - Inputs */
-.dark-content-box .form-control,
-.dark-content-box .form-select {
-  background-color: var(--shadcn-background); /* Fundo do input escuro */
-  color: var(--shadcn-foreground);
-  border: 1px solid var(--shadcn-border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+/* --- Inputs e Forms --- */
+.form-control, .form-select {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  transition: all 0.2s ease !important;
 }
 
-.dark-content-box .form-control::placeholder {
-  color: var(--shadcn-muted-foreground);
-  opacity: 1;
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2) !important;
+  outline: none !important;
 }
 
-.dark-content-box .form-control:focus,
-.dark-content-box .form-select:focus {
-  background-color: var(--shadcn-background);
-  color: var(--shadcn-foreground);
-  border-color: var(--shadcn-ring);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-  outline: none;
-}
-
-/* Estilos Shadcn/ui - Botões */
-.btn-success {
-  background-color: var(--shadcn-primary);
-  border-color: var(--shadcn-primary);
-  color: var(--shadcn-primary-foreground);
+.form-label {
+  color: var(--text-muted);
   font-weight: 500;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+/* --- Botões --- */
+.btn-success {
+  background: linear-gradient(135deg, var(--primary), #059669);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .btn-success:hover {
-  background-color: #059669;
-  border-color: #059669;
-  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
-}
-
-.btn-primary {
-  background-color: var(--shadcn-accent);
-  border-color: var(--shadcn-accent);
-  color: var(--shadcn-accent-foreground);
-  font-weight: 500;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .btn-outline-info {
-  color: var(--shadcn-accent);
-  border-color: var(--shadcn-accent);
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  border-color: var(--accent);
+  color: var(--accent);
+  border-radius: 8px;
 }
 
 .btn-outline-info:hover {
-  background-color: var(--shadcn-accent);
-  color: var(--shadcn-accent-foreground);
+  background-color: var(--accent);
+  color: white;
 }
 
-/* Estilos Shadcn/ui - Abas */
-.nav-tabs {
-  border-bottom: 1px solid var(--shadcn-border);
-  gap: 0;
+/* --- Logs e Terminal --- */
+#logOutputContainer, #logBoxContainer, .terminal-box {
+  background-color: rgba(2, 8, 23, 0.9) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  font-family: 'Fira Code', 'Consolas', monospace;
 }
 
-.nav-tabs .nav-link {
-  color: var(--shadcn-muted-foreground);
-  border: none;
-  border-bottom: 2px solid transparent;
+pre {
+  color: #10b981 !important; /* Verde terminal */
+  font-size: 0.9em !important;
+}
+
+/* --- Navbar --- */
+.navbar {
+  background: rgba(15, 23, 42, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 0;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--primary) !important;
+}
+
+.nav-link {
+  color: var(--text-muted) !important;
   font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  padding: 12px 16px;
-  margin-bottom: -1px;
-}
-
-.nav-tabs .nav-link:hover {
-  color: var(--shadcn-foreground);
-  border-bottom-color: var(--shadcn-muted);
-}
-
-.nav-tabs .nav-link.active {
-  color: var(--shadcn-primary);
-  border-bottom-color: var(--shadcn-primary);
-  background-color: transparent;
-}
-
-/* Estilos Shadcn/ui - Tabelas */
-.table {
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.table thead th {
-  background-color: var(--shadcn-muted);
-  color: var(--shadcn-foreground);
-  font-weight: 600;
-  border: 1px solid var(--shadcn-border);
-  padding: 12px;
-}
-
-.table tbody tr {
-  border-bottom: 1px solid var(--shadcn-border);
-  transition: background-color 0.2s ease;
-}
-
-.table tbody tr:hover {
-  background-color: var(--shadcn-muted);
-}
-
-.table td {
-  padding: 12px;
-  border: 1px solid var(--shadcn-border);
-}
-
-/* Estilos Shadcn/ui - Badges/Status */
-.badge {
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 8px;
-}
-
-.badge-success {
-  background-color: var(--shadcn-primary);
-  color: var(--shadcn-primary-foreground);
-}
-
-.badge-danger {
-  background-color: var(--shadcn-destructive);
-  color: var(--shadcn-destructive-foreground);
-}
-
-.badge-warning {
-  background-color: #f59e0b;
-  color: #ffffff;
-}
-
-.badge-info {
-  background-color: var(--shadcn-accent);
-  color: var(--shadcn-accent-foreground);
-}
-
-/* Estilos Shadcn/ui - Alerts */
-.alert {
-  border: 1px solid var(--shadcn-border);
-  border-radius: 6px;
-  padding: 12px 16px;
-  font-size: 14px;
-}
-
-.alert-danger {
-  background-color: #450a0a; /* Darker background for dark mode */
-  border-color: #7f1d1d;
-  color: #fecaca;
-}
-
-.alert-warning {
-  background-color: #451a03;
-  border-color: #78350f;
-  color: #fde68a;
-}
-
-.alert-info {
-  background-color: #075985;
-  border-color: #0369a1;
-  color: #bfdbfe;
-}
-
-.alert-success {
-  background-color: #064e3b;
-  border-color: #047857;
-  color: #bbf7d0;
-}
-
-/* Estilos Shadcn/ui - HR */
-.dark-content-box hr {
-  border-top-color: var(--shadcn-border);
-  margin: 16px 0;
-}
-
-/* Estilos Shadcn/ui - Tipografia */
-.dark-content-box h1,
-.dark-content-box h2,
-.dark-content-box h3,
-.dark-content-box h4,
-.dark-content-box h5,
-.dark-content-box h6,
-.dark-content-box p,
-.dark-content-box label {
-  color: var(--shadcn-foreground);
-}
-
-.dark-content-box small {
-  color: var(--shadcn-muted-foreground);
-  font-size: 12px;
-}
-
-/* Estilos Shadcn/ui - Links */
-.dark-content-box a {
-  color: var(--shadcn-accent);
-  text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.dark-content-box a:hover {
-  color: #2563eb;
-  text-decoration: underline;
+.nav-link:hover, .nav-link.active {
+  color: var(--text-main) !important;
+}
+
+/* --- Tabs --- */
+.nav-tabs {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: var(--text-muted) !important;
+  padding: 12px 24px;
+}
+
+.nav-tabs .nav-link.active {
+  background: transparent;
+  color: var(--primary) !important;
+  border-bottom: 2px solid var(--primary);
+}
+
+/* --- Footer --- */
+.footer {
+  background: transparent !important;
+  border-top: 1px solid var(--border-color) !important;
+  padding: 20px 0;
+  color: var(--text-muted);
 }
