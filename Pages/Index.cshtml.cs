@@ -23,13 +23,20 @@ namespace GtopPdqNet.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly AuditService _auditService;
 
-        // Lista de Bloqueio (Blacklist) de Hosts e IPs Críticos
+        // Lista de Bloqueio (Blacklist) de Hosts e IPs Críticos individuais
         private readonly List<string> _blacklistedHosts = new List<string> 
         { 
             "addc.redetop.com.br", 
             "ad002.redetop.com.br",
             "10.12.6.248", 
             "10.1.151.235"
+        };
+
+        // Prefixos de Hostnames Bloqueados (Ex: Servidores UNloja e ADloja)
+        private readonly List<string> _blacklistedPrefixes = new List<string> 
+        { 
+            "UN", 
+            "AD" 
         };
 
         [BindProperty]
@@ -90,12 +97,22 @@ namespace GtopPdqNet.Pages
             }
 
             // --- VALIDAÇÃO DE SEGURANÇA (BLACKLIST) ---
-            if (_blacklistedHosts.Any(bh => bh.Equals(hostname.Trim(), StringComparison.OrdinalIgnoreCase)))
+            var trimmedHostname = hostname.Trim();
+
+            // Verifica se o host está na lista individual de bloqueio
+            bool isHostBlacklisted = _blacklistedHosts.Any(bh => bh.Equals(trimmedHostname, StringComparison.OrdinalIgnoreCase));
+            
+            // Verifica se o host começa com algum dos prefixos proibidos (UN, AD, etc)
+            bool hasBlacklistedPrefix = _blacklistedPrefixes.Any(bp => trimmedHostname.StartsWith(bp, StringComparison.OrdinalIgnoreCase));
+
+            if (isHostBlacklisted || hasBlacklistedPrefix)
             {
                 _logger.LogWarning("IndexModel.OnPostDeployAsync: TENTATIVA DE DEPLOY EM HOST BLOQUEADO: {Hostname}", hostname);
+                string reason = isHostBlacklisted ? "está na lista de bloqueio individual" : "possui um prefixo restrito (UN/AD)";
+                
                 return new JsonResult(new { 
                     success = false, 
-                    log = $"ALERTA DE SEGURANÇA: O host/IP '{hostname}' está na lista de bloqueio e não pode receber deploys via GDeploy. Entre em contato com o administrador." 
+                    log = $"ALERTA DE SEGURANÇA: O host '{hostname}' {reason} e não pode receber deploys via GDeploy. Entre em contato com o administrador." 
                 });
             }
 
