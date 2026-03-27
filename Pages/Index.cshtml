@@ -252,10 +252,20 @@
             }
 
             function _displayLog(logText, success) {
-                logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA DO SERVIDOR:\n`;
-                logOutput.textContent += `------------------------------------------------------------\n`;
-                logOutput.textContent += `${logText}\n`;
-                logOutput.textContent += `------------------------------------------------------------\n`;
+                const logBox = document.getElementById('logBox');
+                const logBoxContainer = document.getElementById('logBoxContainer');
+
+                // Atualiza o Monitor de Execução (log superior)
+                logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA RECEBIDA DE: ${logText.split('\n')[0].replace('HOST: ', '')}\n`;
+                logOutput.textContent += `[Status: ${success ? 'SUCESSO' : 'FALHA'}]\n`;
+                
+                // Atualiza a Saída Detalhada (log inferior)
+                logBox.textContent = logText;
+                
+                // Muda a cor da borda da caixa detalhada dependendo do resultado
+                logBoxContainer.style.borderColor = success ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)';
+                
+                _scrollToBottom(logBoxContainer);
             }
 
             function _scrollToBottom(element) {
