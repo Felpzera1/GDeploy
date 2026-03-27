@@ -13,6 +13,7 @@ using GtopPdqNet.Services;
 using System.Net.NetworkInformation; 
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace GtopPdqNet.Pages 
 {
@@ -23,7 +24,7 @@ namespace GtopPdqNet.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly AuditService _auditService;
 
-        // Lista de Bloqueio (Blacklist) de Hosts e IPs Críticos individuais
+        // 1. Lista de Bloqueio (Blacklist) de Hosts e IPs individuais
         private readonly List<string> _blacklistedHosts = new List<string> 
         { 
             "addc.redetop.com.br", 
@@ -32,17 +33,23 @@ namespace GtopPdqNet.Pages
             "10.1.151.235"
         };
 
-        // Prefixos de Hostnames Bloqueados (Ex: Servidores UNloja e ADloja)
+        // 2. Prefixos de Hostnames Bloqueados (Ex: Servidores UNloja e ADloja)
         private readonly List<string> _blacklistedPrefixes = new List<string> 
         { 
             "UN", 
             "AD" 
         };
 
+        // 3. Sub-redes (VLANs) Bloqueadas no formato CIDR
+        private readonly List<string> _blacklistedSubnets = new List<string>
+        {
+            "10.12.6.0/24",
+            "10.1.154.0/24"
+        };
+
         [BindProperty]
         [Required(ErrorMessage = "O Hostname ou IP é obrigatório.")]
         [Display(Name = "Hostname / IP")]
-        // Regex atualizada para aceitar prefixos (CN, TOP, PDV, RDS) OU IPs (v4), separados por ponto e vírgula (;)
         [RegularExpression(@"^(?i)((CN|TOP|PDV|RDS)[^;]*|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(;(CN|TOP|PDV|RDS)[^;]*|;(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})){0,4}$", 
         ErrorMessage = "Formato inválido. Use até 5 computadores (prefixos CN, TOP, PDV, RDS ou IP), separados por (;).")]
         public string Hostname { get; set; } = string.Empty;
@@ -66,120 +73,165 @@ namespace GtopPdqNet.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            _logger.LogInformation("IndexModel.OnGetAsync: Carregando pacotes PDQ...");
             try
             {
                 var packages = await _psService.GetPdqPackagesAsync();
-                if (packages != null && packages.Any())
-                {
-                     PackageOptions = new SelectList(packages);
-                }
-                else
-                {
-                     PackageOptions = new SelectList(new List<string>());
-                }
+                PackageOptions = packages != null && packages.Any() ? new SelectList(packages) : new SelectList(new List<string>());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "IndexModel.OnGetAsync: Erro ao carregar pacotes PDQ.");
-                 PackageOptions = new SelectList(new List<string>());
-                 ViewData["ErrorMessage"] = "Erro ao carregar pacotes.";
+                _logger.LogError(ex, "Erro ao carregar pacotes.");
+                PackageOptions = new SelectList(new List<string>());
+                ViewData["ErrorMessage"] = "Erro ao carregar pacotes.";
             }
             return Page();
         }
 
         public async Task<JsonResult> OnPostDeployAsync(string hostname, string selectedPackage)
         {
-            _logger.LogInformation("IndexModel.OnPostDeployAsync: Host={Hostname}, Pacote={Package}", hostname, selectedPackage);
-
             if (string.IsNullOrWhiteSpace(hostname) || string.IsNullOrWhiteSpace(selectedPackage)) {
                  return new JsonResult(new { success = false, log = "ERRO: Hostname/IP e Pacote são obrigatórios." });
             }
 
-            // --- VALIDAÇÃO DE SEGURANÇA (BLACKLIST) ---
             var trimmedHostname = hostname.Trim();
-
-            // Verifica se o host está na lista individual de bloqueio
-            bool isHostBlacklisted = _blacklistedHosts.Any(bh => bh.Equals(trimmedHostname, StringComparison.OrdinalIgnoreCase));
             
-            // Verifica se o host começa com algum dos prefixos proibidos (UN, AD, etc)
-            bool hasBlacklistedPrefix = _blacklistedPrefixes.Any(bp => trimmedHostname.StartsWith(bp, StringComparison.OrdinalIgnoreCase));
-
-            if (isHostBlacklisted || hasBlacklistedPrefix)
+            // --- VALIDAÇÃO DE SEGURANÇA (BLACKLIST) ---
+            
+            // A. Verificação de Host/IP Individual
+            if (_blacklistedHosts.Any(bh => bh.Equals(trimmedHostname, StringComparison.OrdinalIgnoreCase)))
             {
-                _logger.LogWarning("IndexModel.OnPostDeployAsync: TENTATIVA DE DEPLOY EM HOST BLOQUEADO: {Hostname}", hostname);
-                string reason = isHostBlacklisted ? "está na lista de bloqueio individual" : "possui um prefixo restrito (UN/AD)";
-                
-                return new JsonResult(new { 
-                    success = false, 
-                    log = $"ALERTA DE SEGURANÇA: O host '{hostname}' {reason} e não pode receber deploys via GDeploy. Entre em contato com o administrador." 
-                });
+                return SecurityBlockResponse(hostname, "está na lista de bloqueio individual");
+            }
+
+            // B. Verificação de Prefixo (UN, AD, etc)
+            if (_blacklistedPrefixes.Any(bp => trimmedHostname.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+            {
+                return SecurityBlockResponse(hostname, "possui um prefixo restrito (UN/AD)");
+            }
+
+            // C. Verificação de Sub-rede (VLAN)
+            if (IPAddress.TryParse(trimmedHostname, out var ipAddress))
+            {
+                foreach (var subnet in _blacklistedSubnets)
+                {
+                    if (IsIpInSubnet(ipAddress, subnet))
+                    {
+                        return SecurityBlockResponse(hostname, $"pertence a uma sub-rede bloqueada ({subnet})");
+                    }
+                }
             }
 
             var logBuilder = new StringBuilder();
             var username = User?.Identity?.Name ?? "Usuário Desconhecido";
 
             try {
-                 _logger.LogInformation("IndexModel.OnPostDeployAsync: Verificando conectividade com: {Hostname}", hostname);
-                 logBuilder.AppendLine($"-> Verificando conectividade com \'{hostname}\'...");
+                logBuilder.AppendLine($"-> Verificando conectividade com \'{hostname}\'...");
                 using (var pingSender = new Ping()) {
-                    PingReply reply;
                     try {
-                        reply = await pingSender.SendPingAsync(hostname, 5000); 
-                    } catch (PingException PEx) {
-                        _logger.LogWarning(PEx, "IndexModel.OnPostDeployAsync: Ping para {Hostname} falhou.", hostname);
-                        logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' não resolvido ou inacessível.");
-                        await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
-                        return new JsonResult(new { success = false, log = logBuilder.ToString() });
-                    }
+                        var reply = await pingSender.SendPingAsync(hostname, 3000);
+                        if (reply.Status == IPStatus.Success) {
+                            logBuilder.AppendLine($"   SUCESSO: Host \'{hostname}\' ({reply.Address}) respondeu em {reply.RoundtripTime}ms.");
+                            
+                            // Nova verificação de segurança pós-resolução de DNS (se o hostname virar um IP bloqueado)
+                            if (IPAddress.TryParse(reply.Address.ToString(), out var resolvedIp))
+                            {
+                                foreach (var subnet in _blacklistedSubnets)
+                                {
+                                    if (IsIpInSubnet(resolvedIp, subnet))
+                                    {
+                                        return SecurityBlockResponse(hostname, $"resolve para o IP {resolvedIp}, que pertence a uma sub-rede bloqueada ({subnet})");
+                                    }
+                                }
+                            }
 
-                    if (reply.Status == IPStatus.Success) {
-                        logBuilder.AppendLine($"   SUCESSO: Host \'{hostname}\' ({reply.Address}) respondeu em {reply.RoundtripTime}ms.");
-                        logBuilder.AppendLine("---------------------------------------");
-                        logBuilder.AppendLine("-> Iniciando o comando de deploy PDQ...");
-                    } else {
-                        logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' NÃO respondeu ao ping (Status: {reply.Status}). Deploy cancelado.");
+                            logBuilder.AppendLine("---------------------------------------");
+                            logBuilder.AppendLine("-> Iniciando o comando de deploy PDQ...");
+                        } else {
+                            logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' NÃO respondeu ao ping (Status: {reply.Status}).");
+                            await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
+                            return new JsonResult(new { success = false, log = logBuilder.ToString() });
+                        }
+                    } catch (Exception ex) {
+                        logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' inacessível ou erro de DNS: {ex.Message}");
                         await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
                         return new JsonResult(new { success = false, log = logBuilder.ToString() });
                     }
                 }
 
                 var (deploySuccess, deployOutput) = await _psService.ExecutePdqDeployAsync(hostname, selectedPackage);
-                
                 logBuilder.AppendLine("--- Saída do Script PowerShell ---");
-                logBuilder.Append(deployOutput ?? "[Nenhuma saída do script]");
-
-                if (!deploySuccess) {
-                     logBuilder.AppendLine("\nFALHA: O processo de deploy não foi concluído com sucesso.");
-                } else {
-                    logBuilder.AppendLine("\nSUCESSO: Comando de deploy enviado/concluído com sucesso.");
-                }
-
+                logBuilder.Append(deployOutput ?? "[Nenhuma saída]");
+                
                 var fullLog = logBuilder.ToString();
                 await _auditService.LogDeployAsync(username, hostname, selectedPackage, deploySuccess, fullLog);
-
                 return new JsonResult(new { success = deploySuccess, log = fullLog });
 
             } catch (Exception ex) {
-                 _logger.LogError(ex, "IndexModel.OnPostDeployAsync: Erro INESPERADO para {Hostname}", hostname);
-                 logBuilder.AppendLine($"\nERRO INESPERADO NO SERVIDOR: {ex.Message}");
+                logBuilder.AppendLine($"\nERRO INESPERADO: {ex.Message}");
                 await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
                 return new JsonResult(new { success = false, log = logBuilder.ToString() });
             }
         }
 
-        public async Task<IActionResult> OnPostRefreshPackagesAsync()
+        private JsonResult SecurityBlockResponse(string hostname, string reason)
+        {
+            _logger.LogWarning("SEGURANÇA: Bloqueio de deploy para {Hostname} - Motivo: {Reason}", hostname, reason);
+            return new JsonResult(new { 
+                success = false, 
+                log = $"ALERTA DE SEGURANÇA: O host '{hostname}' {reason} e não pode receber deploys via GDeploy." 
+            });
+        }
+
+        private bool IsIpInSubnet(IPAddress ip, string cidrSubnet)
         {
             try
             {
-                await _psService.RefreshPdqPackagesCacheAsync();
-                StatusMessagePackages = "Cache de pacotes PDQ atualizado com sucesso!";
+                var parts = cidrSubnet.Split('/');
+                if (parts.Length != 2) return false;
+
+                var subnetAddress = IPAddress.Parse(parts[0]);
+                var maskLength = int.Parse(parts[1]);
+
+                if (ip.AddressFamily != subnetAddress.AddressFamily) return false;
+
+                byte[] ipBytes = ip.GetAddressBytes();
+                byte[] subnetBytes = subnetAddress.GetAddressBytes();
+                byte[] maskBytes = new byte[ipBytes.Length];
+
+                for (int i = 0; i < maskBytes.Length; i++)
+                {
+                    if (maskLength >= 8)
+                    {
+                        maskBytes[i] = 0xFF;
+                        maskLength -= 8;
+                    }
+                    else if (maskLength > 0)
+                    {
+                        maskBytes[i] = (byte)(0xFF << (8 - maskLength));
+                        maskLength = 0;
+                    }
+                    else
+                    {
+                        maskBytes[i] = 0x00;
+                    }
+                }
+
+                for (int i = 0; i < ipBytes.Length; i++)
+                {
+                    if ((ipBytes[i] & maskBytes[i]) != (subnetBytes[i] & maskBytes[i]))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "IndexModel.OnPostRefreshPackagesAsync: Erro ao atualizar cache.");
-                StatusMessagePackages = "Erro ao atualizar o cache de pacotes PDQ.";
-            }
+            catch { return false; }
+        }
+
+        public async Task<IActionResult> OnPostRefreshPackagesAsync()
+        {
+            try { await _psService.RefreshPdqPackagesCacheAsync(); StatusMessagePackages = "Cache atualizado!"; }
+            catch { StatusMessagePackages = "Erro ao atualizar cache."; }
             return RedirectToPage(); 
         }
     }
