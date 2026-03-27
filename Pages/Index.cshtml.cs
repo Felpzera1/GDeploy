@@ -29,6 +29,29 @@ namespace GtopPdqNet.Pages
         { 
             "addc.redetop.com.br", 
             "ad002.redetop.com.br",
+            "apps01.redetop.com.br",
+            "apps02.redetop.com.br",
+            "appsdfa.redetop.com.br",
+            "appsnr.redetop.com.br",
+            "bi.redetop.com.br",
+            "crmwin2.redetop.com.br",
+            "crmwin.redetop.com.br",
+            "dhcp-mtz.redetop.com.br",
+            "fs01.redetop.com.br",
+            "grogu.redetop.com.br",
+            "iis02.redetop.com.br",
+            "mhades.redetop.com.br",
+            "mid02.redetop.com.br",
+            "pdqweb.redetop.com.br",
+            "printserver.redetop.com.br",
+            "skywalker.redetop.com.br",
+            "xwing.redetop.com.br",
+            "rds01.redetop.com.br",
+            "rds02.redetop.com.br",
+            "rds03.redetop.com.br",
+            "rds04.redetop.com.br",
+            "rds05.redetop.com.br",
+            "rds06.redetop.com.br",
             "10.12.6.248", 
             "10.1.151.235"
         };
@@ -44,7 +67,8 @@ namespace GtopPdqNet.Pages
         private readonly List<string> _blacklistedSubnets = new List<string>
         {
             "10.12.6.0/24",
-            "10.1.154.0/24"
+            "10.1.154.0/24",
+            "10.1.151.0/24"
         };
 
         [BindProperty]
