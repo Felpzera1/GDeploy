@@ -23,11 +23,21 @@ namespace GtopPdqNet.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly AuditService _auditService;
 
+        // Lista de Bloqueio (Blacklist) de Hosts e IPs Críticos
+        private readonly List<string> _blacklistedHosts = new List<string> 
+        { 
+            "addc.redetop.com.br", 
+            "ad002.redetop.com.br",
+            "10.12.6.248", 
+            "10.1.151.235"
+        };
+
         [BindProperty]
-        [Required(ErrorMessage = "O Hostname é obrigatório.")]
-        [Display(Name = "Hostname")]
-        [RegularExpression(@"^(?i)(CN|TOP|PDV|RDS)[^;]*(;(CN|TOP|PDV|RDS)[^;]*){0,4}$", 
-        ErrorMessage = "Formato inválido. Use até 5 computadores com prefixos CN, TOP, PDV ou RDS, separados por ponto e vírgula (;).")]
+        [Required(ErrorMessage = "O Hostname ou IP é obrigatório.")]
+        [Display(Name = "Hostname / IP")]
+        // Regex atualizada para aceitar prefixos (CN, TOP, PDV, RDS) OU IPs (v4), separados por ponto e vírgula (;)
+        [RegularExpression(@"^(?i)((CN|TOP|PDV|RDS)[^;]*|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(;(CN|TOP|PDV|RDS)[^;]*|;(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})){0,4}$", 
+        ErrorMessage = "Formato inválido. Use até 5 computadores (prefixos CN, TOP, PDV, RDS ou IP), separados por (;).")]
         public string Hostname { get; set; } = string.Empty;
 
         [BindProperty]
@@ -56,11 +66,9 @@ namespace GtopPdqNet.Pages
                 if (packages != null && packages.Any())
                 {
                      PackageOptions = new SelectList(packages);
-                     _logger.LogInformation("IndexModel.OnGetAsync: Carregados {Count} pacotes.", packages.Count);
                 }
                 else
                 {
-                     _logger.LogWarning("IndexModel.OnGetAsync: Nenhum pacote PDQ retornado.");
                      PackageOptions = new SelectList(new List<string>());
                 }
             }
@@ -78,16 +86,17 @@ namespace GtopPdqNet.Pages
             _logger.LogInformation("IndexModel.OnPostDeployAsync: Host={Hostname}, Pacote={Package}", hostname, selectedPackage);
 
             if (string.IsNullOrWhiteSpace(hostname) || string.IsNullOrWhiteSpace(selectedPackage)) {
-                 _logger.LogWarning("IndexModel.OnPostDeployAsync: Parâmetros inválidos.");
-                 return new JsonResult(new { success = false, log = "ERRO: Hostname e Pacote são obrigatórios." });
+                 return new JsonResult(new { success = false, log = "ERRO: Hostname/IP e Pacote são obrigatórios." });
             }
 
-            if (!hostname.ToUpper().StartsWith("CN") && 
-                !hostname.ToUpper().StartsWith("TOP") && 
-                !hostname.ToUpper().StartsWith("PDV") &&
-                !hostname.ToUpper().StartsWith("RDS")) {
-                _logger.LogWarning("IndexModel.OnPostDeployAsync: Prefixo de hostname inválido: {Hostname}", hostname);
-                return new JsonResult(new { success = false, log = $"ERRO: O hostname \'{hostname}\' não tem um prefixo válido (CN, TOP, PDV, RDS)." });
+            // --- VALIDAÇÃO DE SEGURANÇA (BLACKLIST) ---
+            if (_blacklistedHosts.Any(bh => bh.Equals(hostname.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("IndexModel.OnPostDeployAsync: TENTATIVA DE DEPLOY EM HOST BLOQUEADO: {Hostname}", hostname);
+                return new JsonResult(new { 
+                    success = false, 
+                    log = $"ALERTA DE SEGURANÇA: O host/IP '{hostname}' está na lista de bloqueio e não pode receber deploys via GDeploy. Entre em contato com o administrador." 
+                });
             }
 
             var logBuilder = new StringBuilder();
@@ -100,21 +109,18 @@ namespace GtopPdqNet.Pages
                     PingReply reply;
                     try {
                         reply = await pingSender.SendPingAsync(hostname, 5000); 
-                    } catch (PingException PEx) when (PEx.InnerException is System.Net.Sockets.SocketException sockEx && sockEx.SocketErrorCode == System.Net.Sockets.SocketError.HostNotFound) {
-                        _logger.LogWarning(PEx, "IndexModel.OnPostDeployAsync: Ping para {Hostname} - Host Não Encontrado (DNS?)", hostname);
-                        logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' não resolvido (erro DNS).");
+                    } catch (PingException PEx) {
+                        _logger.LogWarning(PEx, "IndexModel.OnPostDeployAsync: Ping para {Hostname} falhou.", hostname);
+                        logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' não resolvido ou inacessível.");
                         await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
                         return new JsonResult(new { success = false, log = logBuilder.ToString() });
                     }
 
                     if (reply.Status == IPStatus.Success) {
-                        _logger.LogInformation("IndexModel.OnPostDeployAsync: Ping OK para {Hostname}. IP: {IPAddress}, Tempo: {RoundtripTime}ms", hostname, reply.Address, reply.RoundtripTime);
                         logBuilder.AppendLine($"   SUCESSO: Host \'{hostname}\' ({reply.Address}) respondeu em {reply.RoundtripTime}ms.");
                         logBuilder.AppendLine("---------------------------------------");
                         logBuilder.AppendLine("-> Iniciando o comando de deploy PDQ...");
-                        logBuilder.AppendLine();
                     } else {
-                        _logger.LogWarning("IndexModel.OnPostDeployAsync: Ping FALHOU para {Hostname}. Status: {Status}", hostname, reply.Status);
                         logBuilder.AppendLine($"FALHA CONEXÃO: Host \'{hostname}\' NÃO respondeu ao ping (Status: {reply.Status}). Deploy cancelado.");
                         await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
                         return new JsonResult(new { success = false, log = logBuilder.ToString() });
@@ -122,16 +128,14 @@ namespace GtopPdqNet.Pages
                 }
 
                 var (deploySuccess, deployOutput) = await _psService.ExecutePdqDeployAsync(hostname, selectedPackage);
-                _logger.LogInformation("IndexModel.OnPostDeployAsync: Resultado do script deploy: Success={Success}", deploySuccess);
                 
                 logBuilder.AppendLine("--- Saída do Script PowerShell ---");
                 logBuilder.Append(deployOutput ?? "[Nenhuma saída do script]");
 
                 if (!deploySuccess) {
-                     _logger.LogWarning("IndexModel.OnPostDeployAsync: Script de deploy retornou falha.");
-                     logBuilder.AppendLine("\nFALHA: O processo de deploy não foi concluído com sucesso. Verifique os logs acima.");
+                     logBuilder.AppendLine("\nFALHA: O processo de deploy não foi concluído com sucesso.");
                 } else {
-                    logBuilder.AppendLine("\nSUCESSO: Comando de deploy enviado/concluído com sucesso pelo script.");
+                    logBuilder.AppendLine("\nSUCESSO: Comando de deploy enviado/concluído com sucesso.");
                 }
 
                 var fullLog = logBuilder.ToString();
@@ -139,14 +143,9 @@ namespace GtopPdqNet.Pages
 
                 return new JsonResult(new { success = deploySuccess, log = fullLog });
 
-            } catch (PingException pingEx) {
-                _logger.LogError(pingEx, "IndexModel.OnPostDeployAsync: Erro PING inesperado para {Hostname}", hostname);
-                logBuilder.AppendLine($"ERRO PING INESPERADO: {pingEx.Message}");
-                await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
-                return new JsonResult(new { success = false, log = logBuilder.ToString() });
             } catch (Exception ex) {
-                 _logger.LogError(ex, "IndexModel.OnPostDeployAsync: Erro INESPERADO para {Hostname}/{Package}", hostname, selectedPackage);
-                 logBuilder.AppendLine($"\n******************\nERRO INESPERADO NO SERVIDOR:\n{ex.Message}\n******************");
+                 _logger.LogError(ex, "IndexModel.OnPostDeployAsync: Erro INESPERADO para {Hostname}", hostname);
+                 logBuilder.AppendLine($"\nERRO INESPERADO NO SERVIDOR: {ex.Message}");
                 await _auditService.LogDeployAsync(username, hostname, selectedPackage, false, logBuilder.ToString());
                 return new JsonResult(new { success = false, log = logBuilder.ToString() });
             }
@@ -154,17 +153,15 @@ namespace GtopPdqNet.Pages
 
         public async Task<IActionResult> OnPostRefreshPackagesAsync()
         {
-            _logger.LogInformation("IndexModel.OnPostRefreshPackagesAsync: Solicitando atualização do cache de pacotes PDQ.");
             try
             {
                 await _psService.RefreshPdqPackagesCacheAsync();
                 StatusMessagePackages = "Cache de pacotes PDQ atualizado com sucesso!";
-                _logger.LogInformation("IndexModel.OnPostRefreshPackagesAsync: Cache de pacotes PDQ atualizado.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "IndexModel.OnPostRefreshPackagesAsync: Erro ao tentar atualizar o cache de pacotes PDQ.");
-                StatusMessagePackages = "Erro ao atualizar o cache de pacotes PDQ. Verifique os logs do servidor.";
+                _logger.LogError(ex, "IndexModel.OnPostRefreshPackagesAsync: Erro ao atualizar cache.");
+                StatusMessagePackages = "Erro ao atualizar o cache de pacotes PDQ.";
             }
             return RedirectToPage(); 
         }

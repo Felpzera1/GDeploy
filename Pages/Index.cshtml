@@ -54,9 +54,9 @@
                             <div class="mb-4">
                                 <label asp-for="Hostname" class="form-label small text-uppercase tracking-wider">Computadores de Destino</label>
                                 <input asp-for="Hostname" id="hostnameInput" class="form-control" 
-                                       placeholder="Ex.: CN001; TOP002; PDV003; RDS004" />
+                                       placeholder="Ex.: CN001; 192.168.1.50; RDS004" />
                                 <div class="form-text text-muted x-small mt-2">
-                                    <i class="fas fa-info-circle me-1"></i> Use ponto e vírgula (;) para múltiplos hosts (máx. 5).
+                                    <i class="fas fa-info-circle me-1"></i> Aceita prefixos (CN, TOP, PDV, RDS) ou IP. Use (;) para separar (máx. 5).
                                 </div>
                                 <span asp-validation-for="Hostname" class="text-danger x-small"></span>
                             </div>
@@ -158,12 +158,18 @@
                     return;
                 }
 
-                const invalidHostnames = hostnames.filter(h => !h.toUpperCase().startsWith('CN') && 
-                                                              !h.toUpperCase().startsWith('TOP') && 
-                                                              !h.toUpperCase().startsWith('PDV') &&
-                                                              !h.toUpperCase().startsWith('RDS'));
+                const ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+                const invalidHostnames = hostnames.filter(h => {
+                    const isPrefixValid = h.toUpperCase().startsWith('CN') || 
+                                         h.toUpperCase().startsWith('TOP') || 
+                                         h.toUpperCase().startsWith('PDV') ||
+                                         h.toUpperCase().startsWith('RDS');
+                    const isIpValid = ipRegex.test(h);
+                    return !isPrefixValid && !isIpValid;
+                });
+                
                 if (invalidHostnames.length > 0) {
-                    alert(`Os seguintes computadores não têm prefixos válidos (CN, TOP, PDV, RDS): ${invalidHostnames.join(', ')}`);
+                    alert(`Os seguintes computadores não têm formatos válidos (CN, TOP, PDV, RDS ou IP): ${invalidHostnames.join(', ')}`);
                     return;
                 }
 
