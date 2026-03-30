@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
- Inicia um deploy no PDQ Deploy usando a CLI.
+ Inicia e monitora um deploy no PDQ Deploy usando a CLI para capturar steps em tempo real.
 #>
 param(
     [Parameter(Mandatory=$true)]
@@ -13,67 +13,75 @@ param(
     [string]$package
 )
 
-if (-not (Test-Path $PDQExePath -PathType Leaf)) {
-    Write-Error "ERRO CRÍTICO: PDQDeploy.exe não encontrado em '$PDQExePath'"
-    exit 1
-}
+$stdoutPath = "$PSScriptRoot\deploy_stdout.log"
+$stderrPath = "$PSScriptRoot\deploy_stderr.log"
 
-if (-not $hostname) {
-    Write-Error "ERRO CRÍTICO: Hostname não pode ser vazio."
-    exit 1
-}
+# Limpar logs anteriores
+if (Test-Path $stdoutPath) { Remove-Item $stdoutPath -Force }
+if (Test-Path $stderrPath) { Remove-Item $stderrPath -Force }
 
-if (-not $package) {
-    Write-Error "ERRO CRÍTICO: Nome do pacote não pode ser vazio."
-    exit 1
+function Write-Log($msg) {
+    $msg | Out-File -FilePath $stdoutPath -Append -Encoding utf8
+    Write-Host $msg
 }
 
 try {
-    $isHostReachable = Test-Connection -ComputerName $hostname -Count 1 -Quiet -ErrorAction SilentlyContinue
-
-    if (-not $isHostReachable) {
-        Write-Error "ERRO: Host '$hostname' não foi encontrado ou não respondeu."
-        exit 1
+    Write-Log "-> Verificando conectividade com '$hostname'..."
+    $ping = Test-Connection -ComputerName $hostname -Count 1 -Quiet -ErrorAction SilentlyContinue
+    if (-not $ping) {
+        throw "Host '$hostname' não respondeu ao ping."
     }
+    Write-Log "   SUCESSO: Host online."
 
-    $stdoutPath = "$PSScriptRoot\deploy_stdout.log"
-    $stderrPath = "$PSScriptRoot\deploy_stderr.log"
-
-    # Limpar arquivos de log antigos
-    if (Test-Path $stdoutPath) { Remove-Item $stdoutPath -Force }
-    if (Test-Path $stderrPath) { Remove-Item $stderrPath -Force }
-
-    $startProcessArgs = @{
-        FilePath = $PDQExePath
-        ArgumentList = @("Deploy", "-Package", "`"$package`"", "-Targets", $hostname)
-        NoNewWindow = $true
-        PassThru = $true
-        RedirectStandardOutput = $stdoutPath
-        RedirectStandardError = $stderrPath
-    }
-
-    $process = Start-Process @startProcessArgs -Wait
-
-    # Ler conteúdo dos logs
-    $stdOutContent = ""
-    $stdErrContent = ""
+    Write-Log "-> Iniciando deploy do pacote '$package'..."
     
-    if (Test-Path $stdoutPath) { $stdOutContent = Get-Content $stdoutPath -Raw }
-    if (Test-Path $stderrPath) { $stdErrContent = Get-Content $stderrPath -Raw }
+    # Inicia o deploy e captura a saída inicial para pegar o ID
+    $initResult = & $PDQExePath Deploy -Package "$package" -Targets $hostname 2>&1
+    Write-Log ($initResult -join "`n")
 
-    # Exibir saída para captura pelo PowerShellService
-    if ($stdOutContent) { Write-Host $stdOutContent }
-    if ($stdErrContent) { Write-Error $stdErrContent }
-
-    if ($process.ExitCode -ne 0) {
-        Write-Error "ERRO PDQ: Código de saída $($process.ExitCode)."
-        exit 1
-    } else {
-        Write-Host "SUCESSO: Deploy iniciado com sucesso para '$hostname'!"
-        exit 0
+    # Tenta extrair o ID do deploy (Ex: "Deployment Started ID: 1234")
+    $deployId = $null
+    foreach ($line in $initResult) {
+        if ($line -match "ID\s*:\s*(\d+)") {
+            $deployId = $matches[1]
+            break
+        }
     }
+
+    if ($deployId) {
+        Write-Log "-> Monitorando Steps (ID: $deployId)..."
+        
+        $isFinished = $false
+        $lastStatus = ""
+        
+        while (-not $isFinished) {
+            Start-Sleep -Seconds 2
+            
+            # Busca o status detalhado
+            $statusResult = & $PDQExePath GetDeployment -ID $deployId 2>&1
+            $statusText = $statusResult -join "`n"
+            
+            # Se o status mudou, atualiza o log
+            if ($statusText -ne $lastStatus) {
+                $statusText | Out-File -FilePath $stdoutPath -Append -Encoding utf8
+                $lastStatus = $statusText
+            }
+
+            # Verifica se terminou (Status: Finished, Success, Failed, etc.)
+            if ($statusText -match "Finished" -or $statusText -match "Success" -or $statusText -match "Failed" -or $statusText -match "Error") {
+                $isFinished = $true
+            }
+        }
+    } else {
+        Write-Log "AVISO: Não foi possível capturar o ID do deploy para monitoramento em tempo real."
+    }
+
+    Write-Host "SUCESSO: Processo de deploy finalizado para '$hostname'."
+    exit 0
 }
 catch {
-    Write-Error "ERRO CATASTRÓFICO: $($_.Exception.Message)"
+    $errorMsg = "ERRO: $($_.Exception.Message)"
+    $errorMsg | Out-File -FilePath $stderrPath -Append -Encoding utf8
+    Write-Error $errorMsg
     exit 1
 }
