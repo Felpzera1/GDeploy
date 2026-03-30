@@ -136,7 +136,9 @@
             const hostnameInput = document.getElementById('hostnameInput');
             const packageSelect = document.getElementById('packageSelect');
             const logOutput = document.getElementById('logOutput');
-            const logContainer = document.getElementById('logOutputContainer');
+            const logOutputContainer = document.getElementById('logOutputContainer');
+            const logBox = document.getElementById('logBox');
+            const logBoxContainer = document.getElementById('logBoxContainer');
             const spinner = document.getElementById('deploySpinner');
             const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
@@ -178,8 +180,8 @@
                 logOutput.textContent += `[${_getCurrentTime()}] > HOSTS: ${hostnames.join(', ')}\n`;
                 logOutput.textContent += `------------------------------------------------------------\n`;
 
-                logContainer.style.borderColor = 'rgba(16, 185, 129, 0.5)';
-                _scrollToBottom(logContainer);
+                logOutputContainer.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                _scrollToBottom(logOutputContainer);
                 deployButton.disabled = true;
                 spinner.style.display = 'inline-block';
                 deployButtonText.textContent = 'PROCESSANDO...';
@@ -199,14 +201,14 @@
                     deployButton.disabled = false;
                     spinner.style.display = 'none';
                     deployButtonText.textContent = 'INICIAR DEPLOY';
-                    logContainer.style.borderColor = failCount === 0 ? 'rgba(16, 185, 129, 0.5)' : (successCount === 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(245, 158, 11, 0.5)');
+                    logOutputContainer.style.borderColor = failCount === 0 ? 'rgba(16, 185, 129, 0.5)' : (successCount === 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(245, 158, 11, 0.5)');
 
                     return;
                 }
 
                 const hostname = hostnames[index];
                 logOutput.textContent += `\n[${_getCurrentTime()}] > EXECUTANDO EM ${index + 1}/${hostnames.length}: '${hostname}'\n`;
-                _scrollToBottom(logContainer);
+                _scrollToBottom(logOutputContainer);
 
                 const formData = new FormData();
                 formData.append('hostname', hostname);
@@ -234,8 +236,8 @@
                         log: data.log || '[Sem log]'
                     });
 
-                    _displayLog(`HOST: ${hostname}\n${data.log || '[Sem log]'}`, data.success);
-                    _scrollToBottom(logContainer);
+                    _displayLog(hostname, data.log || '[Sem log]', data.success);
+                    _scrollToBottom(logOutputContainer);
                     processHostnames(hostnames, selectedPackage, index + 1, results);
                 })
                 .catch(error => {
@@ -245,22 +247,19 @@
                         success: false,
                         log: `ERRO Comunicação:\n${error.message}`
                     });
-                    _displayLog(`HOST: ${hostname}\nERRO Comunicação:\n${error.message}`, false);
-                    _scrollToBottom(logContainer);
+                    _displayLog(hostname, `ERRO Comunicação:\n${error.message}`, false);
+                    _scrollToBottom(logOutputContainer);
                     processHostnames(hostnames, selectedPackage, index + 1, results);
                 });
             }
 
-            function _displayLog(logText, success) {
-                const logBox = document.getElementById('logBox');
-                const logBoxContainer = document.getElementById('logBoxContainer');
-
+            function _displayLog(hostname, logText, success) {
                 // Atualiza o Monitor de Execução (log superior)
-                logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA RECEBIDA DE: ${logText.split('\n')[0].replace('HOST: ', '')}\n`;
+                logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA RECEBIDA DE: ${hostname}\n`;
                 logOutput.textContent += `[Status: ${success ? 'SUCESSO' : 'FALHA'}]\n`;
                 
-                // Atualiza a Saída Detalhada (log inferior)
-                logBox.textContent = logText;
+                // Atualiza a Saída Detalhada (log inferior) - Substitui o conteúdo para o host atual
+                logBox.textContent = `COMPUTADOR: ${hostname}\n---------------------------------------\n${logText}`;
                 
                 // Muda a cor da borda da caixa detalhada dependendo do resultado
                 logBoxContainer.style.borderColor = success ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)';
