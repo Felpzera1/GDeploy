@@ -11,7 +11,6 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces; 
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics; 
 using Microsoft.Extensions.Caching.Memory; 
 
 namespace GtopPdqNet.Services 
@@ -88,7 +87,7 @@ namespace GtopPdqNet.Services
         public async Task<(bool success, string output)> ExecutePdqDeployAsync(string hostname, string packageName)
          {
              if (string.IsNullOrEmpty(_deployScriptFullPath) || string.IsNullOrEmpty(_pdqDeployExePath)) {
-                 return (false, "Erro: Configuração de script ou executável PDQ não encontrada.");
+                 return (false, "Erro: Configuração inválida.");
              }
 
              try {
@@ -98,15 +97,9 @@ namespace GtopPdqNet.Services
                            .AddParameter("hostname", hostname)
                            .AddParameter("package", packageName);
 
-                        StringBuilder combinedOutput = new StringBuilder();
-
-                        // Captura fielmente todos os fluxos
-                        ps.Streams.Verbose.DataAdded += (s, e) => combinedOutput.AppendLine(ps.Streams.Verbose[e.Index].Message);
-                        ps.Streams.Warning.DataAdded += (s, e) => combinedOutput.AppendLine(ps.Streams.Warning[e.Index].Message);
-                        ps.Streams.Error.DataAdded += (s, e) => combinedOutput.AppendLine(ps.Streams.Error[e.Index].ToString());
-
                        Collection<PSObject> results = await Task.Run(() => ps.Invoke());
-
+                       
+                       StringBuilder combinedOutput = new StringBuilder();
                        foreach(var result in results) combinedOutput.AppendLine(result?.ToString() ?? string.Empty);
                        
                        string finalOutput = combinedOutput.ToString().Trim();
@@ -116,7 +109,7 @@ namespace GtopPdqNet.Services
                    }
               }
               catch (Exception ex) {
-                   return (false, $"Erro interno do servidor: {ex.Message}");
+                   return (false, $"Erro: {ex.Message}");
               }
           }
     }
