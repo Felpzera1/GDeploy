@@ -142,6 +142,30 @@
             const spinner = document.getElementById('deploySpinner');
             const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+            let logInterval = null;
+
+            function startLogPolling() {
+                if (logInterval) clearInterval(logInterval);
+                logInterval = setInterval(() => {
+                    fetch('/Index?handler=GetLatestLogs')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.log) {
+                                logBox.textContent = data.log;
+                                _scrollToBottom(logBoxContainer);
+                            }
+                        })
+                        .catch(err => console.error('Erro ao buscar logs:', err));
+                }, 1500); // Busca logs a cada 1.5 segundos
+            }
+
+            function stopLogPolling() {
+                if (logInterval) {
+                    clearInterval(logInterval);
+                    logInterval = null;
+                }
+            }
+
             deployButton.addEventListener('click', function () {
                 const hostnamesInput = hostnameInput.value.trim();
                 const selectedPackage = packageSelect.value;
@@ -186,6 +210,9 @@
                 spinner.style.display = 'inline-block';
                 deployButtonText.textContent = 'PROCESSANDO...';
 
+                // Inicia o polling de logs em tempo real
+                startLogPolling();
+
                 processHostnames(hostnames, selectedPackage, 0, []);
             });
 
@@ -202,6 +229,9 @@
                     spinner.style.display = 'none';
                     deployButtonText.textContent = 'INICIAR DEPLOY';
                     logOutputContainer.style.borderColor = failCount === 0 ? 'rgba(16, 185, 129, 0.5)' : (successCount === 0 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(245, 158, 11, 0.5)');
+
+                    // Para o polling quando tudo terminar
+                    setTimeout(stopLogPolling, 5000); // Espera 5 segundos para garantir que pegou o log final
 
                     return;
                 }
@@ -258,8 +288,8 @@
                 logOutput.textContent += `\n[${_getCurrentTime()}] > RESPOSTA RECEBIDA DE: ${hostname}\n`;
                 logOutput.textContent += `[Status: ${success ? 'SUCESSO' : 'FALHA'}]\n`;
                 
-                // Atualiza a Saída Detalhada (log inferior) - Substitui o conteúdo para o host atual
-                logBox.textContent = `COMPUTADOR: ${hostname}\n---------------------------------------\n${logText}`;
+                // Atualiza a Saída Detalhada (log inferior) com o log final do host
+                logBox.textContent = logText;
                 
                 // Muda a cor da borda da caixa detalhada dependendo do resultado
                 logBoxContainer.style.borderColor = success ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)';

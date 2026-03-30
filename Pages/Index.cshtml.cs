@@ -14,6 +14,8 @@ using System.Net.NetworkInformation;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace GtopPdqNet.Pages 
 {
@@ -23,6 +25,7 @@ namespace GtopPdqNet.Pages
         private readonly IPowerShellService _psService;
         private readonly ILogger<IndexModel> _logger;
         private readonly AuditService _auditService;
+        private readonly IWebHostEnvironment _environment;
 
         // 1. Lista de Bloqueio (Blacklist) de Hosts e IPs individuais
         private readonly List<string> _blacklistedHosts = new List<string> 
@@ -88,11 +91,12 @@ namespace GtopPdqNet.Pages
         [TempData]
         public string? StatusMessagePackages { get; set; }
 
-        public IndexModel(IPowerShellService psService, ILogger<IndexModel> logger, AuditService auditService)
+        public IndexModel(IPowerShellService psService, ILogger<IndexModel> logger, AuditService auditService, IWebHostEnvironment environment)
         {
             _psService = psService;
             _logger = logger;
             _auditService = auditService;
+            _environment = environment;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -120,28 +124,18 @@ namespace GtopPdqNet.Pages
             var trimmedHostname = hostname.Trim();
             
             // --- VALIDAÇÃO DE SEGURANÇA (BLACKLIST) ---
-            
-            // A. Verificação de Host/IP Individual
             if (_blacklistedHosts.Any(bh => bh.Equals(trimmedHostname, StringComparison.OrdinalIgnoreCase)))
-            {
                 return SecurityBlockResponse(hostname, "está na lista de bloqueio individual");
-            }
 
-            // B. Verificação de Prefixo (UN, AD, etc)
             if (_blacklistedPrefixes.Any(bp => trimmedHostname.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
-            {
                 return SecurityBlockResponse(hostname, "possui um prefixo restrito (UN/AD)");
-            }
 
-            // C. Verificação de Sub-rede (VLAN)
             if (IPAddress.TryParse(trimmedHostname, out var ipAddress))
             {
                 foreach (var subnet in _blacklistedSubnets)
                 {
                     if (IsIpInSubnet(ipAddress, subnet))
-                    {
                         return SecurityBlockResponse(hostname, $"pertence a uma sub-rede bloqueada ({subnet})");
-                    }
                 }
             }
 
@@ -156,15 +150,12 @@ namespace GtopPdqNet.Pages
                         if (reply.Status == IPStatus.Success) {
                             logBuilder.AppendLine($"   SUCESSO: Host \'{hostname}\' ({reply.Address}) respondeu em {reply.RoundtripTime}ms.");
                             
-                            // Nova verificação de segurança pós-resolução de DNS (se o hostname virar um IP bloqueado)
                             if (IPAddress.TryParse(reply.Address.ToString(), out var resolvedIp))
                             {
                                 foreach (var subnet in _blacklistedSubnets)
                                 {
                                     if (IsIpInSubnet(resolvedIp, subnet))
-                                    {
                                         return SecurityBlockResponse(hostname, $"resolve para o IP {resolvedIp}, que pertence a uma sub-rede bloqueada ({subnet})");
-                                    }
                                 }
                             }
 
@@ -197,6 +188,27 @@ namespace GtopPdqNet.Pages
             }
         }
 
+        public IActionResult OnGetGetLatestLogs()
+        {
+            try
+            {
+                string logPath = Path.Combine(_environment.ContentRootPath, "scripts", "deploy_stdout.log");
+                if (!System.IO.File.Exists(logPath)) return new JsonResult(new { log = "" });
+
+                // Abre o arquivo permitindo leitura mesmo se outro processo estiver escrevendo
+                using (var fs = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var sr = new StreamReader(fs))
+                {
+                    string content = sr.ReadToEnd();
+                    return new JsonResult(new { log = content });
+                }
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { log = $"Erro ao ler log: {ex.Message}" });
+            }
+        }
+
         private JsonResult SecurityBlockResponse(string hostname, string reason)
         {
             _logger.LogWarning("SEGURANÇA: Bloqueio de deploy para {Hostname} - Motivo: {Reason}", hostname, reason);
@@ -212,40 +224,21 @@ namespace GtopPdqNet.Pages
             {
                 var parts = cidrSubnet.Split('/');
                 if (parts.Length != 2) return false;
-
                 var subnetAddress = IPAddress.Parse(parts[0]);
                 var maskLength = int.Parse(parts[1]);
-
                 if (ip.AddressFamily != subnetAddress.AddressFamily) return false;
-
                 byte[] ipBytes = ip.GetAddressBytes();
                 byte[] subnetBytes = subnetAddress.GetAddressBytes();
                 byte[] maskBytes = new byte[ipBytes.Length];
-
                 for (int i = 0; i < maskBytes.Length; i++)
                 {
-                    if (maskLength >= 8)
-                    {
-                        maskBytes[i] = 0xFF;
-                        maskLength -= 8;
-                    }
-                    else if (maskLength > 0)
-                    {
-                        maskBytes[i] = (byte)(0xFF << (8 - maskLength));
-                        maskLength = 0;
-                    }
-                    else
-                    {
-                        maskBytes[i] = 0x00;
-                    }
+                    if (maskLength >= 8) { maskBytes[i] = 0xFF; maskLength -= 8; }
+                    else if (maskLength > 0) { maskBytes[i] = (byte)(0xFF << (8 - maskLength)); maskLength = 0; }
+                    else { maskBytes[i] = 0x00; }
                 }
-
                 for (int i = 0; i < ipBytes.Length; i++)
                 {
-                    if ((ipBytes[i] & maskBytes[i]) != (subnetBytes[i] & maskBytes[i]))
-                    {
-                        return false;
-                    }
+                    if ((ipBytes[i] & maskBytes[i]) != (subnetBytes[i] & maskBytes[i])) return false;
                 }
                 return true;
             }
