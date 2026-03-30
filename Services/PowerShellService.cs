@@ -165,15 +165,28 @@ namespace GtopPdqNet.Services // Namespace correto
                            .AddParameter("hostname", hostname)
                            .AddParameter("package", packageName);
 
-                        ps.Streams.Verbose.DataAdded += (sender, e) => _logger.LogDebug("Deploy PS Verbose: {Message}", ps.Streams.Verbose[e.Index].ToString());
-                        ps.Streams.Warning.DataAdded += (sender, e) => _logger.LogWarning("Deploy PS Warning: {Message}", ps.Streams.Warning[e.Index].ToString());
-                        ps.Streams.Error.DataAdded += (sender, e) => _logger.LogError("Deploy PS Error: {ErrorRecord}", ps.Streams.Error[e.Index].ToString());
+                        StringBuilder combinedOutput = new StringBuilder();
+
+                        ps.Streams.Verbose.DataAdded += (sender, e) => {
+                            var msg = ps.Streams.Verbose[e.Index].Message;
+                            _logger.LogDebug("Deploy PS Verbose: {Message}", msg);
+                            combinedOutput.AppendLine($"VERBOSE: {msg}");
+                        };
+                        ps.Streams.Warning.DataAdded += (sender, e) => {
+                            var msg = ps.Streams.Warning[e.Index].Message;
+                            _logger.LogWarning("Deploy PS Warning: {Message}", msg);
+                            combinedOutput.AppendLine($"WARNING: {msg}");
+                        };
+                        ps.Streams.Error.DataAdded += (sender, e) => {
+                            var msg = ps.Streams.Error[e.Index].ToString();
+                            _logger.LogError("Deploy PS Error: {ErrorRecord}", msg);
+                            combinedOutput.AppendLine($"ERROR: {msg}");
+                        };
 
                        _logger.LogInformation("Invocando script de Deploy PowerShell...");
                        Collection<PSObject> results = await Task.Run(() => ps.Invoke());
                        _logger.LogInformation("Execução do script de Deploy concluída.");
 
-                       StringBuilder combinedOutput = new StringBuilder();
                        foreach(var result in results) {
                            combinedOutput.AppendLine(result?.ToString() ?? string.Empty);
                        }
@@ -181,7 +194,7 @@ namespace GtopPdqNet.Services // Namespace correto
 
                         if (ps.HadErrors && ps.Streams.Error.Count > 0) {
                              _logger.LogError("O script PowerShell Deploy relatou erros graves.");
-                            return (false, $"Falha crítica no script PowerShell.\n\nLog Completo:\n{finalOutput}");
+                             return (false, finalOutput);
                         } else {
                              _logger.LogInformation("Script PowerShell de deploy executado. Saída:\n{Output}", finalOutput);
                              return (true, finalOutput);

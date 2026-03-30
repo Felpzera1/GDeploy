@@ -72,12 +72,6 @@ body.authenticated-area {
   border-radius: 16px;
   padding: 30px;
   box-shadow: var(--shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.dark-content-box:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* --- Inputs e Forms --- */
