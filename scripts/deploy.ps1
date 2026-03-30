@@ -36,22 +36,37 @@ try {
         exit 1
     }
 
+    $stdoutPath = "$PSScriptRoot\deploy_stdout.log"
+    $stderrPath = "$PSScriptRoot\deploy_stderr.log"
+
+    # Limpar arquivos de log antigos
+    if (Test-Path $stdoutPath) { Remove-Item $stdoutPath -Force }
+    if (Test-Path $stderrPath) { Remove-Item $stderrPath -Force }
+
     $startProcessArgs = @{
         FilePath = $PDQExePath
         ArgumentList = @("Deploy", "-Package", "`"$package`"", "-Targets", $hostname)
         NoNewWindow = $true
         PassThru = $true
-        RedirectStandardOutput = "$PSScriptRoot\deploy_stdout.log"
-        RedirectStandardError = "$PSScriptRoot\deploy_stderr.log"
+        RedirectStandardOutput = $stdoutPath
+        RedirectStandardError = $stderrPath
     }
 
     $process = Start-Process @startProcessArgs -Wait
 
-    $stdOutContent = Get-Content "$PSScriptRoot\deploy_stdout.log" -Raw
-    $stdErrContent = Get-Content "$PSScriptRoot\deploy_stderr.log" -Raw
+    # Ler conteúdo dos logs
+    $stdOutContent = ""
+    $stdErrContent = ""
+    
+    if (Test-Path $stdoutPath) { $stdOutContent = Get-Content $stdoutPath -Raw }
+    if (Test-Path $stderrPath) { $stdErrContent = Get-Content $stderrPath -Raw }
+
+    # Exibir saída para captura pelo PowerShellService
+    if ($stdOutContent) { Write-Host $stdOutContent }
+    if ($stdErrContent) { Write-Error $stdErrContent }
 
     if ($process.ExitCode -ne 0) {
-        Write-Error "ERRO PDQ: Código de saída $($process.ExitCode). STDERR: $stdErrContent"
+        Write-Error "ERRO PDQ: Código de saída $($process.ExitCode)."
         exit 1
     } else {
         Write-Host "SUCESSO: Deploy iniciado com sucesso para '$hostname'!"
