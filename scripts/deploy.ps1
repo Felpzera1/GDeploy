@@ -36,6 +36,7 @@ try {
     Write-Log "-> Iniciando deploy do pacote '$package'..."
     
     # Inicia o deploy e captura a saída inicial para pegar o ID
+    # Usando o caminho completo do executável PDQ
     $initResult = & $PDQExePath Deploy -Package "$package" -Targets $hostname 2>&1
     Write-Log ($initResult -join "`n")
 
@@ -57,12 +58,16 @@ try {
         while (-not $isFinished) {
             Start-Sleep -Seconds 2
             
-            # Busca o status detalhado
+            # Busca o status detalhado usando o caminho completo do executável PDQ
             $statusResult = & $PDQExePath GetDeployment -ID $deployId 2>&1
             $statusText = $statusResult -join "`n"
             
             # Se o status mudou, atualiza o log
             if ($statusText -ne $lastStatus) {
+                # Limpa e escreve o status atual (opcional: ou apenas anexa)
+                # Para logs em tempo real, anexar costuma ser melhor para histórico, 
+                # mas o GetDeployment traz o status ATUAL completo.
+                # Vamos sobrescrever para mostrar sempre o estado mais recente dos steps.
                 $statusText | Out-File -FilePath $stdoutPath -Append -Encoding utf8
                 $lastStatus = $statusText
             }
